@@ -15,7 +15,7 @@ data Contraction : n -> Type where
     CFace : Opetope k -> String -> List (Contraction (S n)) -> Contraction (S n) -> Contraction (S (S n))
 
 export
-p1 : Contraction n -> Opetope k
+p1 : Contraction n -> Opetope ()
 p1 (CPoint p _) = p
 p1 (CArrow p _ _ _) = p
 p1 (CFace p _ _ _) = p
@@ -25,13 +25,6 @@ p2 : Contraction n -> Opetope n
 p2 (CPoint _ s) = Point s
 p2 (CArrow _ s d c) = Arrow s (p2 d) (p2 c)
 p2 (CFace _ s d c) = Face s (map p2 d) (p2 c)
-
-
--- public export
--- data MOpetope: a -> Nat -> Type where
---     Point : a -> Opetope a Z
---     Arrow : a -> Opetope a Z -> Opetope a Z -> Opetope a (S Z)
---     Face : a -> List (Opetope a (S n)) -> Opetope a (S n) -> Opetope a (S (S n))
 
 
 export
@@ -49,13 +42,6 @@ mkOpetope {k} s ds c = case ds of
         Yes prf => replace (sym (cong {f=S} prf)) (Arrow s (replace prf d) (replace prf c)) 
         No _ => ?hole1 -- (Face s ds c)
     _ => ?hole2 -- (Face s ds c)
-    
-
--- eq : Eq a => List a -> List a -> Bool
--- eq Nil (x::xs) = False
--- eq (x::xs) Nil = False
--- eq Nil Nil = True
--- eq (x::xs) (y::ys) = (x == y) && (eq xs ys) 
 
 
 export
@@ -80,22 +66,10 @@ Eq (Opetope n) => Ord (Opetope n) where
     compare (Arrow s1 d1 c1) (Arrow s2 d2 c2) = compare s1 s2-- compare (s1, d1, c1) (s2, d2, c2)
     compare (Face s1 d1 c1) (Face s2 d2 c2) = compare s1 s2 -- compare (s1, d1, c1) (s2, d2, c2)
 
-
 -- somewhere else
 -- compare (Point _) (Arrow _ _ _) = LT
 -- compare (Point _) (Face _ _ _) = LT
 -- compare (Arrow _ _ _) (Face _ _ _) = LT
-
-
--- export
--- Show (Opetope n) where
---     show op = case op of
---             (Point s) => s
---             (Arrow s d c) => show' s [d] c
---             (Face s d c) => show' s d c
---         where
---             show' : String -> (List (Opetope k)) -> Opetope k -> String
---             show' s d c = unwords $ [(show ((dim c) + 1)), "[", s, ":", (show d), " -> ", (show c), "]"]
 
 export
 build_op : (n: Nat) -> Opetope n

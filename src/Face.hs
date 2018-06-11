@@ -1,6 +1,3 @@
-{-# LANGUAGE TypeFamilies, GADTs, KindSignatures, StandaloneDeriving, DataKinds, FlexibleInstances, LambdaCase, ExistentialQuantification #-}
-
-
 module Face where 
 
 import Nattype
