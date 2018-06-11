@@ -21,6 +21,9 @@ cod : (ProdFace (S n)) -> (ProdFace n)
 cod (Arrow _ _ _ c) = c
 cod (Face _ _ _ c) = c
 
+export
+dim : {n: Nat} -> (ProdFace n) -> Nat
+dim {n} _ = n
 
 export
 total
@@ -37,25 +40,27 @@ dim_p2 (Point _ p) = dim p
 dim_p2 (Arrow _ p _ _) = dim p
 dim_p2 (Face _ p _ _) = dim p
 
-convert : n=k -> Opetope n -> Opetope k
-convert prf op = replace prf op
 
-lemma_of_dim : (op: Opetope n) -> (n = (dim op))
-lemma_of_dim = ?hole
+lemma_of_dim_op : (op: Opetope n) -> (n = (dim op))
+lemma_of_dim_op = ?hole
+
+lemma_of_dim_face : (g: ProdFace n) -> (n = (dim g))
+lemma_of_dim_face = ?hole
+
 
 export
 p1 : (g: ProdFace n) -> Opetope (dim_p1 g)
 p1 g = case g of
-    (Point p _) => replace (lemma_of_dim p) p
-    (Arrow p _ _ _) => replace (lemma_of_dim p) p
-    (Face p _ _ _) => replace (lemma_of_dim p) p
+    (Point p _) => replace (lemma_of_dim_op p) p
+    (Arrow p _ _ _) => replace (lemma_of_dim_op p) p
+    (Face p _ _ _) => replace (lemma_of_dim_op p) p
 
 export
 p2 : (g: ProdFace n) -> Opetope (dim_p2 g)
 p2 g = case g of
-    (Point _ p) => replace (lemma_of_dim p) p
-    (Arrow _ p _ _) => replace (lemma_of_dim p) p
-    (Face _ p _ _) => replace (lemma_of_dim p) p
+    (Point _ p) => replace (lemma_of_dim_op p) p
+    (Arrow _ p _ _) => replace (lemma_of_dim_op p) p
+    (Face _ p _ _) => replace (lemma_of_dim_op p) p
 
 
 Eq (ProdFace n) where
@@ -75,20 +80,18 @@ Eq (ProdFace n) => Ord (ProdFace n) where
     compare (Face p q _ _) (Face p' q' _ _) = lexi (p, q) (p', q')
 
 -- instance Subtype (ProdFace dim) where
---     type SuperType (ProdFace dim) = O.Opetope dim 
+--     type SuperType (ProdFace dim) = O.Opetope dim
 
-embed : ProdFace n -> O.Opetope n
-embed op = case op of
-        (Point p q) => O.Point (name p q)
-        (Arrow p q d c) => O.Arrow (name p q) (embed d) (embed c)
-        (Face p q d c) => O.Face (name p q) (map embed d) (embed c)
-    where
-        name : Opetope k -> Opetope n -> String
-        name p q = show (p, q)
+name_of_op : O.Opetope k -> O.Opetope l -> String
+name_of_op p q = show (p, q)
 
 
-dim : {n: Nat} -> ProdFace n -> Nat
-dim {n} _ = n
+embed : {n:Nat} -> (g: ProdFace n) -> O.Opetope (dim g)
+embed {n} op = case op of
+        (Point p q) => O.Point (name_of_op p q)
+        (Arrow p q d c) => O.Arrow (name_of_op p q) (embed d) (embed c)
+        (Face p q d c) =>  O.Face (name_of_op p q) (map embed d) (embed c)
+
 
 match : ProdFace (S (S n)) -> Bool
 match op = O.match (embed op)
@@ -112,8 +115,43 @@ match op = O.match (embed op)
 -- --     (FaceE (Point _)) <= (FaceE (Face _ _ _)) = True
 -- --     (FaceE (Arrow _ _ _)) <= (FaceE (Face _ _ _)) = True
 
+Projection : Type
+Projection = {n: Nat} -> (dim_px: ProdFace n -> Nat) -> ((t: ProdFace n) -> Opetope (dim_px t))
 
--- --     @staticmethod
+
+all_eq : Opetope k -> List (ProdFace n) -> (dim_px: ProdFace n -> Nat) -> ((t: ProdFace n) -> Opetope (dim_px t)) -> Bool
+all_eq p [] _ _ = True
+all_eq p (x::Nil) _ pi = eq p (pi x)
+all_eq p (x::xs) dim_px pi = (eq p (pi x)) && (all_eq p xs dim_px pi)
+
+deep_p1 : {n: Nat} -> (g: ProdFace n) -> Opetope (dim_p1 g)
+deep_p1 {n} g = case g of
+            (Point p _) => replace (lemma_of_dim_face g) (O.Point (name p))
+            (Arrow  p _ d c) => O.Arrow (name p) (deep_p1 d) (deep_p1 c)
+            (Face p _ d c) => O.Face (name p) (map deep_p1 d) (deep_p1 c)
+
+mutual
+    is_valid_contraction : ProdFace n -> Bool
+    is_valid_contraction contr = case contr of
+            (Point _ _) => True
+            (Arrow _ _ _ _) => contract contr
+            (Face _ _ _ _) => contract contr
+
+    contract : {k: Nat} -> ProdFace (S k) -> Bool
+    contract {k} contr = case compare (O.dim (p1 contr)) (S k) of
+        EQ => eq (p1 contr) (deep_p1 contr)
+        LT => False
+        GT => if (eq (p1 contr) (p1 (cod contr))) && (all_eq (p1 contr) ((cod contr)::(dom contr)) dim_p1 p1)
+            then is_valid_contraction (cod contr)
+            else False
+
+--TODO shouldn't match work recursivly?
+--TODO shouldn't verify work recursivly?
+
+verify : {n: Nat} -> ProdFace (S (S n)) -> Bool
+verify {n} g = match g && is_valid_contraction g
+
+    -- -     @staticmethod
 -- --     def verify_construction(p1: Opetope, p2: Opetope, ins: 'Iterable[Face]' = (), out=None, name="") -> bool:
 -- --         if not Opetope.match(ins, out, out.level + 1):
 -- --             return False
@@ -144,17 +182,17 @@ match op = O.match (embed op)
 -- --         return True
 
 
--- from_arrow_and_point :: O.Opetope (S Z) -> O.Opetope Z -> ProdFace (S Z)
--- from_arrow_and_point arr pt = let (O.Arrow _ d c) = arr in
---     Arrow "" (em arr) (em pt) (Point d pt) (Point c pt)
+from_arrow_and_point : O.Opetope (S Z) -> O.Opetope Z -> ProdFace (S Z)
+from_arrow_and_point arr pt = let (O.Arrow _ d c) = arr in
+    Arrow arr pt (Point d pt) (Point c pt)
 
--- -- we can't just use from_arrow_and_point, because the order p1, p2 is important
--- from_point_and_arrow ::  O.Opetope Z -> O.Opetope (S Z) -> ProdFace (S Z)
--- from_point_and_arrow pt arr = let (O.Arrow _ d c) = arr in
---     Arrow "" (em pt) (em arr) (Point pt d) (Point pt c)
+-- we can't just use from_arrow_and_point, because the order p1, p2 is important
+from_point_and_arrow :  O.Opetope Z -> O.Opetope (S Z) -> ProdFace (S Z)
+from_point_and_arrow pt arr = let (O.Arrow _ d c) = arr in
+    Arrow pt arr (Point pt d) (Point pt c)
 
--- from_arrow_and_arrow :: O.Opetope (S Z) -> O.Opetope (S Z) -> ProdFace (S Z)
--- from_arrow_and_arrow arr1 arr2 =
---     let (O.Arrow _ d1 c1) = arr1
---         (O.Arrow _ d2 c2) = arr2 in
---             Arrow "" (em arr1) (em arr2) (Point d1 d2) (Point c1 c2)
+from_arrow_and_arrow : O.Opetope (S Z) -> O.Opetope (S Z) -> ProdFace (S Z)
+from_arrow_and_arrow arr1 arr2 =
+    let (O.Arrow _ d1 c1) = arr1
+        (O.Arrow _ d2 c2) = arr2 in
+            Arrow arr1 arr2 (Point d1 d2) (Point c1 c2)

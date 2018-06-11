@@ -45,10 +45,6 @@ subouts op = case op of
     (Arrow s d c) => singleton c
     (Face s d c) => unions [singleton c, (unions (map subouts d)), subouts c]
 
--- export
--- is_valid_contraction : Contraction n -> Bool
--- is_valid_contraction c = ?hole
-
 
 dmap: Functor f => (func : a -> b) -> f a -> f (Lazy b)
 dmap func it = map (Delay . func) it

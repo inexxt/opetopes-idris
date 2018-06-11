@@ -14,19 +14,19 @@ module Contraction
 -- dim_p1 : Contraction n -> Nat
 -- dim_p1 (CPoint p _) = dim p
 -- dim_p1 (CArrow p _ _ _) = dim p
--- dim_p1 (CFace p _ _ _) = dim p 
+-- dim_p1 (CFace p _ _ _) = dim p
 
 
 -- export
 -- p1 : (c: Contraction n) -> Opetope (dim_p1 c)
 -- p1 c = case c of
---         (CPoint p p') => case decEq (dim p) (dim_p1 (CPoint p p')) of 
+--         (CPoint p p') => case decEq (dim p) (dim_p1 (CPoint p p')) of
 --                             Yes prf => replace prf p
 --                             No _ => ?hole
---         (CArrow p s d c) => case decEq (dim p) (dim_p1 (CArrow p s d c)) of 
+--         (CArrow p s d c) => case decEq (dim p) (dim_p1 (CArrow p s d c)) of
 --                             Yes prf => replace prf p
 --                             No _ => ?hole
---         (CFace p s d c) => case decEq (dim p) (dim_p1 (CFace p s d c)) of 
+--         (CFace p s d c) => case decEq (dim p) (dim_p1 (CFace p s d c)) of
 --                             Yes prf => replace prf p
 --                             No _ => ?hole
 
@@ -52,7 +52,7 @@ module Contraction
 -- all_eq p (x::xs) = eq p (p1 x) && (all_eq p xs)
 
 -- mutual
---     is_valid_contraction : Contraction w -> Bool 
+--     is_valid_contraction : Contraction w -> Bool
 --     is_valid_contraction contr = case contr of
 --             (CPoint _ _) => eq (p1 contr) (p2 contr)
 --             (CArrow _ _ _ _) => eq (p1 contr) (p2 contr) -- niebezpieczne, sprawdzić
@@ -65,4 +65,3 @@ module Contraction
 --         GT => if (eq (p1 contr) (p1 (codC contr))) && (all_eq (p1 contr) ((codC contr)::(domC contr)))
 --             then is_valid_contraction (codC contr)
 --             else False
-

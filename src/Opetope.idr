@@ -10,29 +10,26 @@ data Opetope : Nat -> Type where
 
 
 export
+name : Opetope n -> String
+name (Point s) = s
+name (Arrow s _ _) = s
+name (Face s _ _) = s
+
+export
 dim : {n: Nat} -> Opetope n -> Nat
 dim {n} _ = n
-
-
-    -- where
-    --     repl : Opetope (dim_p1 c) -> (k: Nat) -> Opetope k
-    --     repl p k = case decEq (dim_p1 c) k of
-    --                     Yes prf => replace prf p
-    --                     No _ => ?hole
-
-
 
 add : (n: Nat) -> Nat
 add n = S n
 
-export
-mkOpetope : {k: Nat} -> String -> List (Opetope k) -> Opetope k -> Opetope (S k)
-mkOpetope {k} s ds c = case ds of
-    (d::Nil) => case decEq k Z of
-        -- tu się dzieje dowodzenie
-        Yes prf => replace (sym (cong {f=S} prf)) (Arrow s (replace prf d) (replace prf c))
-        No _ => ?hole1 -- (Face s ds c) -- i teraz mam udowodnić, że jest k = S l...
-    _ => ?hole2 -- (Face s ds c) -- i tu też muszę to dowodzić
+-- export
+-- mkOpetope : {k: Nat} -> String -> List (Opetope k) -> Opetope k -> Opetope (S k)
+-- mkOpetope {k} s ds c = case ds of
+--     (d::Nil) => case decEq k Z of
+--         -- tu się dzieje dowodzenie
+--         Yes prf => replace (sym (cong {f=S} prf)) (Arrow s (replace prf d) (replace prf c))
+--         No _ => ?hole1 -- (Face s ds c) -- i teraz mam udowodnić, że jest k = S l...
+--     _ => ?hole2 -- (Face s ds c) -- i tu też muszę to dowodzić
 
 
 export
@@ -47,15 +44,15 @@ Show (Opetope n) where
 public export
 Eq (Opetope n) where
     (Point s1) == (Point s2) = s1 == s2
-    (Arrow s1 d1 c1) == (Arrow s2 d2 c2) = s1 == s2-- compare (s1, d1, c1) (s2, d2, c2)
-    (Face s1 d1 c1) == (Face s2 d2 c2) = s1 == s2 -- compare (s1, d1, c1) (s2, d2, c2)
+    (Arrow s1 d1 c1) == (Arrow s2 d2 c2) = (s1, d1, c1) == (s2, d2, c2)-- compare (s1, d1, c1) (s2, d2, c2)
+    (Face s1 d1 c1) == (Face s2 d2 c2) = (s1, d1, c1) == (s2, d2, c2) -- compare (s1, d1, c1) (s2, d2, c2)
 
 
 public export
 Eq (Opetope n) => Ord (Opetope n) where
     compare (Point s1) (Point s2) = compare s1 s2
-    compare (Arrow s1 d1 c1) (Arrow s2 d2 c2) = compare s1 s2-- compare (s1, d1, c1) (s2, d2, c2)
-    compare (Face s1 d1 c1) (Face s2 d2 c2) = compare s1 s2 -- compare (s1, d1, c1) (s2, d2, c2)
+    compare (Arrow s1 d1 c1) (Arrow s2 d2 c2) = compare (s1, d1, c1) (s2, d2, c2)-- compare (s1, d1, c1) (s2, d2, c2)
+    compare (Face s1 d1 c1) (Face s2 d2 c2) = compare (s1, d1, c1) (s2, d2, c2) -- compare (s1, d1, c1) (s2, d2, c2)
 
 -- somewhere else
 -- compare (Point _) (Arrow _ _ _) = LT
@@ -100,8 +97,8 @@ are_equal : (OSet n) -> (OSet n) -> Bool
 are_equal ms1 ms2 = (MS.toList ms1) == (MS.toList ms2)
 
 export
-match : {n: Nat} -> List (Opetope (S n)) -> Opetope (S n) -> Bool
-match {n} ins out = are_equal (all_dom `MS.union` out_cod) (all_cod `MS.union` out_cod)
+match : {n: Nat} -> Opetope (S (S n)) -> Bool
+match {n} (Face _ ins out) = are_equal (all_dom `MS.union` out_cod) (all_cod `MS.union` out_cod)
     where
         all_dom : OSet n
         all_dom = MS.fromList (concat $ map dom ins)
