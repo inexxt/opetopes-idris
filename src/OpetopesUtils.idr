@@ -18,11 +18,6 @@ OMap = (n: Nat) -> OSet n
 empty: OMap
 empty n = emptyOSet {n}
 
--- f : (n: Nat) -> (k: Nat) -> Opetope n
--- f n k with (decEq k n)
---     f _ k | (Yes prf) = replace prf (build_op k)
---     f n k | (No _) = build_op n
-
 singleton : {n: Nat} -> (Opetope n) -> OMap
 singleton {n} x = \k => case decEq n k of
     Yes prf => singletonOSet (replace prf x)
@@ -57,36 +52,6 @@ subouts op = case op of
 
 dmap: Functor f => (func : a -> b) -> f a -> f (Lazy b)
 dmap func it = map (Delay . func) it
-
-eq : {n1: Nat} -> {n2: Nat} -> Opetope n1 -> Opetope n2 -> Bool
-eq {n1} {n2} op1 op2 = case decEq n1 n2 of
-    Yes prf => (replace prf op1) == op2
-    No _ => False
-
-
-dec : Nat -> Nat
-dec Z = Z
-dec (S n) = n
-
-all_eq : Opetope n -> List (Contraction m) -> Bool
-all_eq p [] = True
-all_eq p (x::Nil) = eq p (p1 x)
-all_eq p (x::xs) = eq p (p1 x) && (all_eq p xs)
-
-mutual
-    is_valid_contraction : Contraction w -> Bool 
-    is_valid_contraction contr = case contr of
-            (CPoint _ _) => eq (p1 contr) (p2 contr)
-            (CArrow _ _ _ _) => eq (p1 contr) (p2 contr) -- niebezpieczne, sprawdzić
-            (CFace _ _ _ _) => contract contr
-
-    contract : {k: Nat} -> Contraction (S (S k)) -> Bool
-    contract {k} contr = case compare (dim (p1 contr)) (S (S k)) of
-        EQ => eq (p1 contr) (p2 contr)
-        LT => False
-        GT => if (eq (p1 contr) (p1 (codC contr))) && (all_eq (p1 contr) ((codC contr)::(domC contr)))
-            then is_valid_contraction (codC contr)
-            else False
 
 export
 is_non_degenerated : Opetope n -> Bool

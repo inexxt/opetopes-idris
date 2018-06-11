@@ -8,51 +8,18 @@ data Opetope : Nat -> Type where
     Arrow : String -> Opetope Z -> Opetope Z -> Opetope (S Z)
     Face : String -> List (Opetope (S n)) -> Opetope (S n) -> Opetope (S (S n))
 
-public export
-data Contraction : n -> Type where
-    CPoint : Opetope Z -> String -> Contraction Z
-    CArrow : Opetope k -> String -> Contraction Z -> Contraction Z -> Contraction (S Z)
-    CFace : Opetope k -> String -> List (Contraction (S n)) -> Contraction (S n) -> Contraction (S (S n))
-
 
 export
 dim : {n: Nat} -> Opetope n -> Nat
 dim {n} _ = n
-    
-export
-total
-dim_p1 : Contraction n -> Nat
-dim_p1 (CPoint p _) = dim p
-dim_p1 (CArrow p _ _ _) = dim p
-dim_p1 (CFace p _ _ _) = dim p 
 
-
-
-
-export
-p1 : (c: Contraction n) -> Opetope (dim_p1 c)
-p1 c = case c of
-        (CPoint p p') => case decEq (dim p) (dim_p1 (CPoint p p')) of 
-                            Yes prf => replace prf p
-                            No _ => ?hole
-        (CArrow p s d c) => case decEq (dim p) (dim_p1 (CArrow p s d c)) of 
-                            Yes prf => replace prf p
-                            No _ => ?hole
-        (CFace p s d c) => case decEq (dim p) (dim_p1 (CFace p s d c)) of 
-                            Yes prf => replace prf p
-                            No _ => ?hole
 
     -- where
     --     repl : Opetope (dim_p1 c) -> (k: Nat) -> Opetope k
-    --     repl p k = case decEq (dim_p1 c) k of 
+    --     repl p k = case decEq (dim_p1 c) k of
     --                     Yes prf => replace prf p
     --                     No _ => ?hole
 
-export
-p2 : Contraction n -> Opetope n
-p2 (CPoint _ s) = Point s
-p2 (CArrow _ s d c) = Arrow s (p2 d) (p2 c)
-p2 (CFace _ s d c) = Face s (map p2 d) (p2 c)
 
 
 add : (n: Nat) -> Nat
@@ -62,10 +29,10 @@ export
 mkOpetope : {k: Nat} -> String -> List (Opetope k) -> Opetope k -> Opetope (S k)
 mkOpetope {k} s ds c = case ds of
     (d::Nil) => case decEq k Z of
-        -- tu się dzieje magia
-        Yes prf => replace (sym (cong {f=S} prf)) (Arrow s (replace prf d) (replace prf c)) 
-        No _ => ?hole1 -- (Face s ds c)
-    _ => ?hole2 -- (Face s ds c)
+        -- tu się dzieje dowodzenie
+        Yes prf => replace (sym (cong {f=S} prf)) (Arrow s (replace prf d) (replace prf c))
+        No _ => ?hole1 -- (Face s ds c) -- i teraz mam udowodnić, że jest k = S l...
+    _ => ?hole2 -- (Face s ds c) -- i tu też muszę to dowodzić
 
 
 export
@@ -77,14 +44,14 @@ Show (Opetope n) where
 
 
 -- TODO change the equality
-export
+public export
 Eq (Opetope n) where
     (Point s1) == (Point s2) = s1 == s2
     (Arrow s1 d1 c1) == (Arrow s2 d2 c2) = s1 == s2-- compare (s1, d1, c1) (s2, d2, c2)
     (Face s1 d1 c1) == (Face s2 d2 c2) = s1 == s2 -- compare (s1, d1, c1) (s2, d2, c2)
 
 
-export
+public export
 Eq (Opetope n) => Ord (Opetope n) where
     compare (Point s1) (Point s2) = compare s1 s2
     compare (Arrow s1 d1 c1) (Arrow s2 d2 c2) = compare s1 s2-- compare (s1, d1, c1) (s2, d2, c2)
@@ -111,17 +78,6 @@ export
 cod : (Opetope (S n)) -> Opetope n
 cod (Arrow _ _ c) = c
 cod (Face _ _ c) = c
-
-export
-domC : (Contraction (S n)) -> List (Contraction n)
-domC (CArrow _ _ d _) = [d]
-domC (CFace _ _ d _) = d
-
-export
-codC : (Contraction (S n)) -> (Contraction n)
-codC (CArrow _ _ _ c) = c
-codC (CFace _ _ _ c) = c
-
 
 export
 OSet : Nat -> Type
@@ -159,3 +115,16 @@ match {n} ins out = are_equal (all_dom `MS.union` out_cod) (all_cod `MS.union` o
 export
 is_unary : Opetope (S dim) -> Bool
 is_unary op = (length (dom op)) == 1
+
+
+export
+eq : {n1: Nat} -> {n2: Nat} -> Opetope n1 -> Opetope n2 -> Bool
+eq {n1} {n2} op1 op2 = case decEq n1 n2 of
+    Yes prf => (replace prf op1) == op2
+    No _ => False
+
+export
+comp : {n1: Nat} -> {n2: Nat} -> Opetope n1 -> Opetope n2 -> Ordering
+comp {n1} {n2} op1 op2 = case decEq n1 n2 of
+    Yes prf => compare (replace prf op1) op2
+    No _ => compare n1 n2
