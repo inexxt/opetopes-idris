@@ -1,0 +1,16 @@
+package opetopes-idris
+
+version    = 0.0.1
+brief      = "Initial project template from idringen"
+
+author     = Jacek KKK <jac.karwowski@gmail.com>
+license    = BSD3
+homepage   = https://github.com/githubuser/opetopes-idris
+sourceloc  = git@github.com:githubuser/opetopes-idris.git
+bugtracker = https://github.com/githubuser/opetopes-idris/issues
+
+sourcedir  = src
+modules    = Test
+tests      = Test.spec
+executable = opetopes-idris
+main       = Main
