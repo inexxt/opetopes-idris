@@ -1,37 +1,35 @@
-module Face where 
+module Face 
 
-import Nattype
-import qualified Opetope as O
-import qualified OpetopeUtils as U
+import Opetope as O
+import OpetopesUtils
 import Subtype
 
-em = U.OE -- how to import that as this name?
-
-data ProdFace (dim :: Nat) where
-    Point :: O.Opetope Z-> O.Opetope Z-> ProdFace Z
+data ProdFace : Nat -> Type where
+    Point :: O.Opetope Z -> O.Opetope Z -> ProdFace Z
     -- TODO there should be refinment types - it has to have p1, p2 of dim > 1 
-    Arrow :: String -> U.OpetopeE -> U.OpetopeE -> ProdFace Z -> ProdFace Z-> ProdFace (S Z)  
-    Face :: String -> U.OpetopeE -> U.OpetopeE -> [ProdFace (S m)] -> ProdFace (S m) -> ProdFace (S (S m))
+    Arrow :: String -> O.Opetope k1 -> O.Opetope k2 -> ProdFace Z -> ProdFace Z -> ProdFace (S Z)  
+    Face :: String -> O.Opetope k1 -> O.Opetope k2 -> List (ProdFace (S m)) -> ProdFace (S m) -> ProdFace (S (S m))
 
 
-p1 :: ProdFace n -> U.OpetopeE
-p1 (Point x _) = em x
-p1 (Arrow _ x _ _ _) = x
-p1 (Face _ x _ _ _) = x
+-- Here, a long list of dim_p1 and dim_p2 as in Opetope.idr
+-- p1 :: ProdFace k -> O.Opetope n1
+-- p1 (Point x _) = x
+-- p1 (Arrow _ x _ _ _) = x
+-- p1 (Face _ x _ _ _) = x
 
-p2 :: ProdFace n -> U.OpetopeE
-p2 (Point _ y) = em y
-p2 (Arrow _ _ y _ _) = y
-p2 (Face _ _ y _ _) = y
+-- p2 :: ProdFace n1 n2 k -> O.Opetope n2
+-- p2 (Point _ y) = y
+-- p2 (Arrow _ _ y _ _) = y
+-- p2 (Face _ _ y _ _) = y
 
--- TODO change that, it should be a very simple extension of O.dom and O.cod
-dom :: ProdFace (S n) -> [ProdFace n]
-dom (Arrow _ _ _ d _) = [d]
-dom (Face _ _ _ d _) = d
+-- -- TODO change that, it should be a very simple extension of O.dom and O.cod
+-- dom :: ProdFace n1 n2 (S n) -> List (ProdFace _ _ n)
+-- dom (Arrow _ _ _ d _) = [d]
+-- dom (Face _ _ _ d _) = d
 
-cod :: ProdFace (S n) -> ProdFace n
-cod (Arrow _ _ _ _ c) = c
-cod (Face _ _ _ _ c) = c
+-- cod :: ProdFace (S n) -> ProdFace n
+-- cod (Arrow _ _ _ _ c) = c
+-- cod (Face _ _ _ _ c) = c
 
 
 deriving instance Eq (ProdFace dim)

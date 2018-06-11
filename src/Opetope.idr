@@ -14,11 +14,39 @@ data Contraction : n -> Type where
     CArrow : Opetope k -> String -> Contraction Z -> Contraction Z -> Contraction (S Z)
     CFace : Opetope k -> String -> List (Contraction (S n)) -> Contraction (S n) -> Contraction (S (S n))
 
+
 export
-p1 : Contraction n -> Opetope ()
-p1 (CPoint p _) = p
-p1 (CArrow p _ _ _) = p
-p1 (CFace p _ _ _) = p
+dim : {n: Nat} -> Opetope n -> Nat
+dim {n} _ = n
+    
+export
+total
+dim_p1 : Contraction n -> Nat
+dim_p1 (CPoint p _) = dim p
+dim_p1 (CArrow p _ _ _) = dim p
+dim_p1 (CFace p _ _ _) = dim p 
+
+
+
+
+export
+p1 : (c: Contraction n) -> Opetope (dim_p1 c)
+p1 c = case c of
+        (CPoint p p') => case decEq (dim p) (dim_p1 (CPoint p p')) of 
+                            Yes prf => replace prf p
+                            No _ => ?hole
+        (CArrow p s d c) => case decEq (dim p) (dim_p1 (CArrow p s d c)) of 
+                            Yes prf => replace prf p
+                            No _ => ?hole
+        (CFace p s d c) => case decEq (dim p) (dim_p1 (CFace p s d c)) of 
+                            Yes prf => replace prf p
+                            No _ => ?hole
+
+    -- where
+    --     repl : Opetope (dim_p1 c) -> (k: Nat) -> Opetope k
+    --     repl p k = case decEq (dim_p1 c) k of 
+    --                     Yes prf => replace prf p
+    --                     No _ => ?hole
 
 export
 p2 : Contraction n -> Opetope n
@@ -26,10 +54,6 @@ p2 (CPoint _ s) = Point s
 p2 (CArrow _ s d c) = Arrow s (p2 d) (p2 c)
 p2 (CFace _ s d c) = Face s (map p2 d) (p2 c)
 
-
-export
-dim : {n: Nat} -> Opetope n -> Nat
-dim {n} _ = n
 
 add : (n: Nat) -> Nat
 add n = S n
@@ -94,7 +118,7 @@ domC (CArrow _ _ d _) = [d]
 domC (CFace _ _ d _) = d
 
 export
-domC : (Contraction (S n)) -> (Contraction n)
+codC : (Contraction (S n)) -> (Contraction n)
 codC (CArrow _ _ _ c) = c
 codC (CFace _ _ _ c) = c
 

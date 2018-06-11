@@ -1,6 +1,7 @@
  module OpetopeUtils
 
 import Data.SortedBag as MS
+import Data.HVect as HV
 
 import Opetope
 
@@ -67,22 +68,25 @@ dec : Nat -> Nat
 dec Z = Z
 dec (S n) = n
 
-all_eq : (Eq a) => List a -> Bool
-all_eq p xs = and $ dmap (\t => t == p) xs
+all_eq : Opetope n -> List (Contraction m) -> Bool
+all_eq p [] = True
+all_eq p (x::Nil) = eq p (p1 x)
+all_eq p (x::xs) = eq p (p1 x) && (all_eq p xs)
 
-is_valid_contraction : Contraction n -> Bool 
-is_valid_contraction contr = case contr of
-        (CPoint _ _) => eq (p1 contr) (p2 contr)
-        (CArrow _ _ _ _) => eq (p1 contr) (p2 contr) -- niebezpieczne, sprawdzić
-        (CFace _ _ _ _) => contract' contr
-    where
-        contract' : {k: Nat} -> Contraction (S (S k)) -> Bool
-        contract' {k} contr = case compare (dim (p1 contr)) (S (S k)) of
-            EQ => eq (p1 contr) (p2 contr)
-            LT => False
-            GT => if all_eq (p1 contr) ((nameC (codC contr))::(map name (domC contr)))
-                then is_valid_contraction (domC contr)
-                else False
+mutual
+    is_valid_contraction : Contraction w -> Bool 
+    is_valid_contraction contr = case contr of
+            (CPoint _ _) => eq (p1 contr) (p2 contr)
+            (CArrow _ _ _ _) => eq (p1 contr) (p2 contr) -- niebezpieczne, sprawdzić
+            (CFace _ _ _ _) => contract contr
+
+    contract : {k: Nat} -> Contraction (S (S k)) -> Bool
+    contract {k} contr = case compare (dim (p1 contr)) (S (S k)) of
+        EQ => eq (p1 contr) (p2 contr)
+        LT => False
+        GT => if (eq (p1 contr) (p1 (codC contr))) && (all_eq (p1 contr) ((codC contr)::(domC contr)))
+            then is_valid_contraction (codC contr)
+            else False
 
 export
 is_non_degenerated : Opetope n -> Bool
