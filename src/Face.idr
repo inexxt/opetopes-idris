@@ -125,35 +125,43 @@ all_eq p (x::Nil) _ pi = eq p (pi x)
 all_eq p (x::xs) dim_px pi = (eq p (pi x)) && (all_eq p xs dim_px pi)
 
 
--- super ugly, but i'm so tired..
-maybe_construct : (a -> b -> c -> d) -> a -> Maybe b -> Maybe c -> Maybe d
-maybe_construct func x y z = case (x, y, z) of
-    (x', Just y', Just z') => Just (func x' y' z')
-    _ => Nothing
 
+-- finally breaking from dependent types to Maybe monad
+-- but there is no other way, since I have no control over internals
+-- of opetopes projections inside ProdFace, so I can't construct Opetope n
 deep_p1 : {n: Nat} -> (g: ProdFace n) -> Maybe (Opetope n)
 deep_p1 {n} g =
     case decEq (dim_p1 g) n of
         Yes prf => case g of
             (Point p _) => Just (O.Point (name p))
-            (Arrow p _ d c) => maybe_construct (O.Arrow) (name p) (deep_p1 d) (deep_p1 c)s
-            (Face p _ d c) => ?hole --replace prf (maybe_construct (O.Arrow) (name p) (map deep_p1 d) (deep_p1 c)))
+            (Arrow p _ d c) => do
+                d' <- deep_p1 d
+                c' <- deep_p1 c
+                return (O.Arrow (name p) d' c')
+            (Face p _ d c) =>  do
+                d' <- sequence (map deep_p1 d)
+                c' <- deep_p1 c
+                return (O.Face (name p) d' c')
         No _ => Nothing
--- mutual
---     is_valid_contraction : ProdFace n -> Bool
---     is_valid_contraction contr = case contr of
---             (Point _ _) => True
---             (Arrow _ _ _ _) => contract contr
---             (Face _ _ _ _) => contract contr
---
---     contract : {k: Nat} -> ProdFace (S k) -> Bool
---     contract {k} contr = case compare (O.dim (p1 contr)) (S k) of
---         EQ => eq (p1 contr) (deep_p1 contr)
---         LT => False
---         GT => if (eq (p1 contr) (p1 (cod contr))) && (all_eq (p1 contr) ((cod contr)::(dom contr)) dim_p1 p1)
---             then is_valid_contraction (cod contr)
---             else False
---
+
+mutual
+    is_valid_contraction : ProdFace n -> Bool
+    is_valid_contraction contr = case contr of
+            (Point _ _) => True
+            (Arrow _ _ _ _) => contract contr
+            (Face _ _ _ _) => contract contr
+
+    contract : {k: Nat} -> ProdFace (S k) -> Bool
+    contract {k} contr = case compare (O.dim (p1 contr)) (S k) of
+        EQ => case deep_p1 contr of
+            (Just x) => eq (p1 contr) x
+            Nothing => False
+        LT => False
+        GT => if (eq (p1 contr) (p1 (cod contr))) && (all_eq (p1 contr) ((cod contr)::(dom contr)) dim_p1 p1)
+            then is_valid_contraction (cod contr)
+            else False
+
+
 -- --TODO shouldn't match work recursivly?
 -- --TODO shouldn't verify work recursivly?
 --
