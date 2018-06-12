@@ -1,12 +1,14 @@
 module Product
 
 import Opetope as O
-import OpetopesUtils as U
+import OpetopesUtils as OU
 import Face as F
+import FacesUtils as FU
+
 import Data.AVL.Set as S
 
 -- data OpetopeOrder n where
---     OpetopeOrder : {op: O.Opetope n, ord: S.Set (U.OpetopeE -> U.OpetopeE) } -> OpetopeOrder n-- TODO undefined
+--     OpetopeOrder : {op: O.Opetope n, ord: S.Set (OU.OpetopeE -> OU.OpetopeE) } -> OpetopeOrder n-- TODO undefined
 
 
 -- doesn't work
@@ -45,10 +47,12 @@ possible_faces op building_blocks p q =
     dfs (F.singletonFSet (F.cod op)) F.emptyFSet (F.fromListFSet building_blocks) op p q
 
 
-product :: O.Opetope k1 -> O.Opetope k2 -> (F.FMap, F.FMap)
-product orderP orderQ =
-    let p = op orderP
-        q = op orderQ
-        subsp = U.subopetopes p
-        subsq = U.subopetopes q
-        points s = undefined in undefined
+product : O.Opetope k1 -> O.Opetope k2 -> (FU.FMap, FU.FMap)
+product p q =
+        let subsp = OU.subopetopes p
+            subsq = OU.subopetopes q
+            small_faces_points = [F.from_point_and_point p1 p2 | p1 <- subsp Z, p2 <- subsq Z]
+            small_faces_arrows = [F.from_point_and_arrow p1 p2 | p1 <- subsp Z, p2 <- subsq (S Z)] ++
+                                 [F.from_arrow_and_point p1 p2 | p1 <- subsp (S Z), p2 <- subsq Z] ++
+                                 [F.from_arrow_and_arrow p1 p2 | p1 <- subsp (S Z), p2 <- subsq (S Z)] in
+    ?hole

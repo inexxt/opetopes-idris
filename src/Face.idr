@@ -173,12 +173,17 @@ is_valid g = match g && is_valid_contraction g
 -- --TODO shouldn't verify work recursivly?
 
 export
+from_point_and_point : O.Opetope Z -> O.Opetope Z -> ProdFace Z
+from_point_and_point p1 p2 = Point p1 p2
+
+export
 from_arrow_and_point : O.Opetope (S Z) -> O.Opetope Z -> ProdFace (S Z)
 from_arrow_and_point arr pt = let (O.Arrow _ d c) = arr in
     Arrow arr pt (Point d pt) (Point c pt)
 
-export
+
 -- we can't just use from_arrow_and_point, because the order p1, p2 is important
+export
 from_point_and_arrow :  O.Opetope Z -> O.Opetope (S Z) -> ProdFace (S Z)
 from_point_and_arrow pt arr = let (O.Arrow _ d c) = arr in
     Arrow pt arr (Point pt d) (Point pt c)

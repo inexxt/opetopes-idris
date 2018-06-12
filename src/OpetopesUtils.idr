@@ -1,16 +1,12 @@
- module OpetopeUtils
+module OpetopeUtils
 
 import Data.SortedBag as MS
 import Data.HVect as HV
 
 import Opetope
 
--- import Data.SortedMap as M
--- this is this key moment - I want to have a function n:Nat -> OSet (Opetope n)
--- but implemented efficiently - either by SortedMap (might be impossible) or just a Vector
--- data OMap : Nat -> Type where
---     OMNil : OMap Z
---     OMCons : OMap n -> OSet (S n) -> OMap (S n)
+%access export
+
 
 OMap : Type
 OMap = (n: Nat) -> OSet n
@@ -33,6 +29,7 @@ unions : (List OMap) -> OMap
 unions [] = empty
 unions (x::xs) = x `union` (unions xs)
 
+export
 subopetopes : Opetope n -> OMap
 subopetopes op = case op of
     (Point x) => singleton op
