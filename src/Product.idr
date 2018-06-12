@@ -7,9 +7,6 @@ import FacesUtils as FU
 
 import Data.AVL.Set as S
 
--- data OpetopeOrder n where
---     OpetopeOrder : {op: O.Opetope n, ord: S.Set (OU.OpetopeE -> OU.OpetopeE) } -> OpetopeOrder n-- TODO undefined
-
 
 -- doesn't work
 -- Semigroup (FSet n) where
@@ -31,16 +28,7 @@ dfs ins used building_blocks target_out p q =
                                       i <- F.toListFSet ins,
                                       not (F.containsFSet b used),
                                       let new_ins = (ins `F.unionFSet` (F.fromListFSet (F.dom b))),
-                                      let new_used = (b `F.insertFSet` used),
-                                      --matching_cond i b,
-                                      order_cond b]
-            where
-                --matching_cond : Opetope k -> Opetope l -> Bool
-                --matching_cond i b = ?hole -- (i == (F.cod b)) && (p1 i) `S.member` (U.subopetopes p) && (p2 i) `S.member` (U.subopetopes q)
-                order_cod : Opetope k -> Bool
-                order_cond b = True -- (and [or [ordP (F.em bi) (F.em ti) | bi <- (O.dom (p1 b))] | ti <- (O.dom (p1 t))]) && (and [or [ordQ (F.em bi) (F.em ti) | bi <- (O.dom (p2 b))] | ti <- (O.dom (p2 t))])
-                    -- ((b.p1.level < target_out.p1.level)
-                    -- (b.p2.level < target_out.p2.level)
+                                      let new_used = (b `F.insertFSet` used)]
 
 possible_faces : F.ProdFace (S n) -> List (F.ProdFace (S n)) -> Opetope k1 -> Opetope k2 -> FSet (S (S n))
 possible_faces op building_blocks p q =
@@ -51,8 +39,4 @@ product : O.Opetope k1 -> O.Opetope k2 -> (FU.FMap, FU.FMap)
 product p q =
         let subsp = OU.subopetopes p
             subsq = OU.subopetopes q in
-            -- small_faces_points = [F.from_point_and_point p1 p2 | p1 <- (O.toListOSet $ subsp Z), p2 <- (O.toListOSet $ subsq Z)]
-            -- small_faces_arrows = [F.from_point_and_arrow p1 p2 | p1 <- (O.toListOSet $ subsp Z), p2 <- (O.toListOSet $ subsq (S Z))] ++
-            --                      [F.from_arrow_and_point p1 p2 | p1 <- (O.toListOSet $ subsp (S Z)), p2 <- (O.toListOSet $ subsq Z)] ++
-            --                      [F.from_arrow_and_arrow p1 p2 | p1 <- (O.toListOSet $ subsp (S Z)), p2 <- (O.toListOSet $ subsq (S Z))] in
     ?hole

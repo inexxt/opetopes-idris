@@ -26,6 +26,14 @@ export
 dim : {n: Nat} -> (ProdFace n) -> Nat
 dim {n} _ = n
 
+helper_dim: {n: Nat} -> (ProdFace n) -> Nat
+helper_dim (Point _ _) = Z
+helper_dim (Arrow _ _ _ _) = (S Z)
+helper_dim (Face _ _ _ c) = S (dim c)
+
+lemma_dim_eq_helper_dim: {n: Nat} -> (g: ProdFace n) -> dim g = helper_dim g
+lemma_dim_eq_helper_dim = ?hole
+
 export
 total
 dim_p1 : ProdFace n -> Nat
@@ -41,12 +49,16 @@ dim_p2 (Point _ p) = dim p
 dim_p2 (Arrow _ p _ _) = dim p
 dim_p2 (Face _ p _ _) = dim p
 
+lemma_zero : (dim (Point "a")) = Z
+lemma_zero = ?hh11
 
-lemma_of_dim_op : (op: Opetope n) -> (n = (dim op))
-lemma_of_dim_op = ?hole
+lemma_of_dim_op : {n:Nat} -> (op: Opetope n) -> (n = (dim op))
+lemma_of_dim_op {n = Z} (Point x) = ?hole_1
+lemma_of_dim_op {n = (S Z)} (Arrow x y z) = ?hole_2
+lemma_of_dim_op {n = (S (S k))} (Face x xs y) = ?hole_3
 
 lemma_of_dim_face : (g: ProdFace n) -> (n = (dim g))
-lemma_of_dim_face = ?hole
+lemma_of_dim_face = ?hole6
 
 
 export
@@ -74,6 +86,7 @@ lexi (a1, a2) (b1, b2) = case comp a1 b1 of
     LT => LT
     GT => GT
     EQ => comp a2 b2
+
 public export
 Eq (ProdFace n) => Ord (ProdFace n) where
     compare (Point p q) (Point p' q') = compare (p, q) (p', q')
@@ -100,24 +113,6 @@ match op = case op of
     (Arrow _ _ _ _) => True
     (Face _ _ _ _) => O.match (embed op)
 
-
--- data FaceE = forall n. FaceE (ProdFace n)
-
--- instance Eq FaceE where
---     (FaceE (Point x1 y1)) == (FaceE (Point x2 y2)) = x1 == x2 && y1 == y2
---     (FaceE (Arrow a1 x1 y1 _ _)) == (FaceE (Arrow a2 x2 y2 _ _)) = a1 == a2 && x1 == x2 && y1 == y2 -- Dlaczego to nie działa? Przecież powinno zejść rekurencyjnie ... && c == c' && d == d'
---     (FaceE (Face a1 x1 y1 _ _)) == (FaceE (Face a2 x2 y2 _ _)) = a1 == a2 && x1 == x2 && y1 == y2 -- j.w. && c == c' && d == d'
-
---     _ == _ = False
-
--- -- instance Ord FaceE where
--- --     (FaceE (Point a)) <= (FaceE (Point b)) = a <= b
--- --     (FaceE (Arrow a c d)) <= (FaceE (Arrow b c' d')) = a <= b -- j.w. (a, c, d) <= (b, c', d')
--- --     (FaceE (Face a c d)) <= (FaceE (Face b c' d')) = a <= b -- j.w. (a, c, d) <= (b, c', d')
-
--- --     (FaceE (Point _)) <= (FaceE (Arrow _ _ _)) = True
--- --     (FaceE (Point _)) <= (FaceE (Face _ _ _)) = True
--- --     (FaceE (Arrow _ _ _)) <= (FaceE (Face _ _ _)) = True
 
 Projection : Type
 Projection = {n: Nat} -> (dim_px: ProdFace n -> Nat) -> ((t: ProdFace n) -> Opetope (dim_px t))

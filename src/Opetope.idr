@@ -19,17 +19,14 @@ export
 dim : {n: Nat} -> Opetope n -> Nat
 dim {n} _ = n
 
-add : (n: Nat) -> Nat
-add n = S n
 
--- export
--- mkOpetope : {k: Nat} -> String -> List (Opetope k) -> Opetope k -> Opetope (S k)
--- mkOpetope {k} s ds c = case ds of
---     (d::Nil) => case decEq k Z of
---         -- tu się dzieje dowodzenie
---         Yes prf => replace (sym (cong {f=S} prf)) (Arrow s (replace prf d) (replace prf c))
---         No _ => ?hole1 -- (Face s ds c) -- i teraz mam udowodnić, że jest k = S l...
---     _ => ?hole2 -- (Face s ds c) -- i tu też muszę to dowodzić
+export
+mkOpetope : {k: Nat} -> String -> List (Opetope k) -> Opetope k -> Opetope (S k)
+mkOpetope {k} s ds c = case ds of
+    (d::Nil) => case decEq k Z of
+        Yes prf => replace (sym (cong {f=S} prf)) (Arrow s (replace prf d) (replace prf c))
+        No _ => ?hole1 -- (Face s ds c) -- i teraz mam udowodnić, że jest k = S l...
+    _ => ?hole2 -- (Face s ds c) -- i tu też muszę to dowodzić
 
 
 export
@@ -38,32 +35,23 @@ Show (Opetope n) where
     show (Arrow s d c) = unwords $ [(show ((dim c) + 1)), "[", s, ":", (show d), " -> ", (show c), "]"]
     show (Face s d c)  = unwords $ [(show ((dim c) + 1)), "[", s, ":", (show d), " -> ", (show c), "]"]
 
-
-
--- TODO change the equality
 public export
 Eq (Opetope n) where
     (Point s1) == (Point s2) = s1 == s2
-    (Arrow s1 d1 c1) == (Arrow s2 d2 c2) = (s1, d1, c1) == (s2, d2, c2)-- compare (s1, d1, c1) (s2, d2, c2)
-    (Face s1 d1 c1) == (Face s2 d2 c2) = (s1, d1, c1) == (s2, d2, c2) -- compare (s1, d1, c1) (s2, d2, c2)
+    (Arrow s1 d1 c1) == (Arrow s2 d2 c2) = (s1, d1, c1) == (s2, d2, c2)
+    (Face s1 d1 c1) == (Face s2 d2 c2) = (s1, d1, c1) == (s2, d2, c2)
 
 
 public export
 Eq (Opetope n) => Ord (Opetope n) where
     compare (Point s1) (Point s2) = compare s1 s2
-    compare (Arrow s1 d1 c1) (Arrow s2 d2 c2) = compare (s1, d1, c1) (s2, d2, c2)-- compare (s1, d1, c1) (s2, d2, c2)
-    compare (Face s1 d1 c1) (Face s2 d2 c2) = compare (s1, d1, c1) (s2, d2, c2) -- compare (s1, d1, c1) (s2, d2, c2)
-
--- somewhere else
--- compare (Point _) (Arrow _ _ _) = LT
--- compare (Point _) (Face _ _ _) = LT
--- compare (Arrow _ _ _) (Face _ _ _) = LT
+    compare (Arrow s1 d1 c1) (Arrow s2 d2 c2) = compare (s1, d1, c1) (s2, d2, c2)
+    compare (Face s1 d1 c1) (Face s2 d2 c2) = compare (s1, d1, c1) (s2, d2, c2)
 
 export
 build_op : (n: Nat) -> Opetope n
 build_op Z = Point "a"
 build_op (S Z) = Arrow "b" (build_op Z) (build_op Z)
--- build_op (S n) = Face "c" [(build_op n)] (build_op n) -- for some reason, doesn't work
 build_op (S (S n)) = Face "c" [(build_op (S n))] (build_op (S n))
 
 export
