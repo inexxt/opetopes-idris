@@ -2,7 +2,7 @@ module Face
 
 import Opetope as O
 import OpetopesUtils
-import Data.SortedBag as S
+import Data.AVL.Set as S
 -- import Subtype
 
 public export
@@ -63,7 +63,7 @@ p2 g = case g of
     (Arrow _ p _ _) => replace (lemma_of_dim_op p) p
     (Face _ p _ _) => replace (lemma_of_dim_op p) p
 
-
+public export
 Eq (ProdFace n) where
     (Point p q) == (Point p' q') = p == p' && q == q'
     (Arrow p q d c) == (Arrow p' q' d' c') = O.eq p p' && O.eq q q' && d == d' && c == c'
@@ -74,7 +74,7 @@ lexi (a1, a2) (b1, b2) = case comp a1 b1 of
     LT => LT
     GT => GT
     EQ => comp a2 b2
-
+public export
 Eq (ProdFace n) => Ord (ProdFace n) where
     compare (Point p q) (Point p' q') = compare (p, q) (p', q')
     compare (Arrow p q _ _) (Arrow p' q' _ _) = lexi (p, q) (p', q')
@@ -171,50 +171,19 @@ is_valid g = match g && is_valid_contraction g
 
 -- --TODO shouldn't match work recursivly?
 -- --TODO shouldn't verify work recursivly?
---
--- verify : {n: Nat} -> ProdFace (S (S n)) -> Bool
--- verify {n} g = match g && is_valid_contraction g
 
-    -- -     @staticmethod
--- --     def verify_construction(p1: Opetope, p2: Opetope, ins: 'Iterable[Face]' = (), out=None, name="") -> bool:
--- --         if not Opetope.match(ins, out, out.level + 1):
--- --             return False
-
--- --         face = Face(p1, p2, ins, out, name)
-
--- --         def get_pxs(f: 'Face', px) -> Opetope:
--- --             if not f.level:
--- --                 return Opetope(name=px(f).name)
-
--- --             out = get_pxs(f.out, px)
--- --             ins = [get_pxs(i, px) for i in f.ins if i.level == out.level]
--- --             return Opetope(ins=ins, out=out, name=px(f).name)  # (*)
-
--- --         op1 = get_pxs(face, lambda x: x.p1)
--- --         op2 = get_pxs(face, lambda x: x.p2)
-
--- --         # FIXME remove these
--- --         op1.name = "abecadło"  # I can trust in names of all things below me, but I can't in my name, as in (*)
--- --         op2.name = "abecadło"  # I can trust in names of all things below me, but I can't in my name, as in (*)
-
--- --         # We have to check here if this is a valid projection
--- --         # eg if all (recursivly) faces of self, projected on p1, together get us p1
--- --         # and similarly p2
--- --         if not (Opetope.is_valid_morphism(op1, p1) and Opetope.is_valid_morphism(op2, p2)):
--- --             return False
-
--- --         return True
-
-
+export
 from_arrow_and_point : O.Opetope (S Z) -> O.Opetope Z -> ProdFace (S Z)
 from_arrow_and_point arr pt = let (O.Arrow _ d c) = arr in
     Arrow arr pt (Point d pt) (Point c pt)
 
+export
 -- we can't just use from_arrow_and_point, because the order p1, p2 is important
 from_point_and_arrow :  O.Opetope Z -> O.Opetope (S Z) -> ProdFace (S Z)
 from_point_and_arrow pt arr = let (O.Arrow _ d c) = arr in
     Arrow pt arr (Point pt d) (Point pt c)
 
+export
 from_arrow_and_arrow : O.Opetope (S Z) -> O.Opetope (S Z) -> ProdFace (S Z)
 from_arrow_and_arrow arr1 arr2 =
     let (O.Arrow _ d1 c1) = arr1
@@ -223,7 +192,13 @@ from_arrow_and_arrow arr1 arr2 =
 
 export
 FSet : Nat -> Type
-FSet n = S.SortedBag (ProdFace n)
+FSet n = S.Set (ProdFace n)
+
+-- Semigroup (FSet n) where
+--     a <+> b = a `S.union` b
+--
+-- Monoid (FSet n) where
+--     neutral = S.empty
 
 export
 emptyFSet : {n: Nat} -> FSet n
@@ -231,12 +206,24 @@ emptyFSet {n} = S.empty
 
 export
 singletonFSet : {n: Nat} -> ProdFace n -> FSet n
-singletonFSet {n} op = S.singleton op
---
--- export
--- unionFSet : {n: Nat} -> FSet n -> FSet n -> FSet n
--- unionFSet os1 os2 = MS.union os1 os2
+singletonFSet {n} op = S.insert op S.empty
 
 export
-are_equal : (FSet n) -> (FSet n) -> Bool
-are_equal ms1 ms2 = (S.toList ms1) == (S.toList ms2)
+unionFSet : {n: Nat} -> FSet n -> FSet n -> FSet n
+unionFSet os1 os2 = S.union os1 os2
+
+export
+toListFSet : FSet n -> List (ProdFace n)
+toListFSet os = S.toList os
+
+export
+fromListFSet : List (ProdFace n) -> FSet n
+fromListFSet os = S.fromList os
+
+export
+containsFSet : ProdFace n -> FSet n -> Bool
+containsFSet b op = S.contains b op
+
+export
+insertFSet : ProdFace n -> FSet n -> FSet n
+insertFSet b op = S.insert b op
