@@ -2,6 +2,7 @@ module Face
 
 import Opetope as O
 import OpetopesUtils
+import Data.SortedBag as S
 -- import Subtype
 
 public export
@@ -93,8 +94,11 @@ embed {n} op = case op of
         (Face p q d c) =>  O.Face (name_of_op p q) (map embed d) (embed c)
 
 
-match : ProdFace (S (S n)) -> Bool
-match op = O.match (embed op)
+match : ProdFace n -> Bool
+match op = case op of
+    (Point _ _) => True
+    (Arrow _ _ _ _) => True
+    (Face _ _ _ _) => O.match (embed op)
 
 
 -- data FaceE = forall n. FaceE (ProdFace n)
@@ -137,11 +141,11 @@ deep_p1 {n} g =
             (Arrow p _ d c) => do
                 d' <- deep_p1 d
                 c' <- deep_p1 c
-                return (O.Arrow (name p) d' c')
+                pure (O.Arrow (name p) d' c')
             (Face p _ d c) =>  do
                 d' <- sequence (map deep_p1 d)
                 c' <- deep_p1 c
-                return (O.Face (name p) d' c')
+                pure (O.Face (name p) d' c')
         No _ => Nothing
 
 mutual
@@ -161,6 +165,9 @@ mutual
             then is_valid_contraction (cod contr)
             else False
 
+export
+is_valid : ProdFace n -> Bool
+is_valid g = match g && is_valid_contraction g
 
 -- --TODO shouldn't match work recursivly?
 -- --TODO shouldn't verify work recursivly?
@@ -213,3 +220,23 @@ from_arrow_and_arrow arr1 arr2 =
     let (O.Arrow _ d1 c1) = arr1
         (O.Arrow _ d2 c2) = arr2 in
             Arrow arr1 arr2 (Point d1 d2) (Point c1 c2)
+
+export
+FSet : Nat -> Type
+FSet n = S.SortedBag (ProdFace n)
+
+export
+emptyFSet : {n: Nat} -> FSet n
+emptyFSet {n} = S.empty
+
+export
+singletonFSet : {n: Nat} -> ProdFace n -> FSet n
+singletonFSet {n} op = S.singleton op
+--
+-- export
+-- unionFSet : {n: Nat} -> FSet n -> FSet n -> FSet n
+-- unionFSet os1 os2 = MS.union os1 os2
+
+export
+are_equal : (FSet n) -> (FSet n) -> Bool
+are_equal ms1 ms2 = (S.toList ms1) == (S.toList ms2)
