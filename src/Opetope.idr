@@ -97,6 +97,10 @@ are_equal : (OSet n) -> (OSet n) -> Bool
 are_equal ms1 ms2 = (MS.toList ms1) == (MS.toList ms2)
 
 export
+toListOSet : (OSet n) -> List (Opetope n)
+toListOSet op = MS.toList op
+
+export
 match : {n: Nat} -> Opetope (S (S n)) -> Bool
 match {n} (Face _ ins out) = are_equal (all_dom `MS.union` out_cod) (all_cod `MS.union` out_cod)
     where

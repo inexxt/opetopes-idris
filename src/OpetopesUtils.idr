@@ -1,4 +1,4 @@
-module OpetopeUtils
+module OpetopesUtils
 
 import Data.SortedBag as MS
 import Data.HVect as HV
@@ -7,7 +7,7 @@ import Opetope
 
 %access export
 
-
+export
 OMap : Type
 OMap = (n: Nat) -> OSet n
 

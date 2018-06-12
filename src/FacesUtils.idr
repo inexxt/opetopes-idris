@@ -10,6 +10,7 @@ import Face
 --     OMCons : FMap n -> FSet (S n) -> FMap (S n)
 
 %access export
+
 FMap : Type
 FMap = (n: Nat) -> FSet n
 

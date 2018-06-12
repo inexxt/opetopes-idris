@@ -50,9 +50,9 @@ possible_faces op building_blocks p q =
 product : O.Opetope k1 -> O.Opetope k2 -> (FU.FMap, FU.FMap)
 product p q =
         let subsp = OU.subopetopes p
-            subsq = OU.subopetopes q
-            small_faces_points = [F.from_point_and_point p1 p2 | p1 <- subsp Z, p2 <- subsq Z]
-            small_faces_arrows = [F.from_point_and_arrow p1 p2 | p1 <- subsp Z, p2 <- subsq (S Z)] ++
-                                 [F.from_arrow_and_point p1 p2 | p1 <- subsp (S Z), p2 <- subsq Z] ++
-                                 [F.from_arrow_and_arrow p1 p2 | p1 <- subsp (S Z), p2 <- subsq (S Z)] in
+            subsq = OU.subopetopes q in
+            -- small_faces_points = [F.from_point_and_point p1 p2 | p1 <- (O.toListOSet $ subsp Z), p2 <- (O.toListOSet $ subsq Z)]
+            -- small_faces_arrows = [F.from_point_and_arrow p1 p2 | p1 <- (O.toListOSet $ subsp Z), p2 <- (O.toListOSet $ subsq (S Z))] ++
+            --                      [F.from_arrow_and_point p1 p2 | p1 <- (O.toListOSet $ subsp (S Z)), p2 <- (O.toListOSet $ subsq Z)] ++
+            --                      [F.from_arrow_and_arrow p1 p2 | p1 <- (O.toListOSet $ subsp (S Z)), p2 <- (O.toListOSet $ subsq (S Z))] in
     ?hole
