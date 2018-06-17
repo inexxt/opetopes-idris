@@ -67,33 +67,17 @@ cod : (Opetope (S n)) -> Opetope n
 cod (Arrow _ _ c) = c
 cod (Face _ _ c) = c
 
-export
+public export
 OSet : Nat -> Type
 OSet n = MS.SortedBag (Opetope n)
 
-export
-emptyOSet : {n: Nat} -> OSet n
-emptyOSet {n} = MS.empty
-
-export
-singletonOSet : {n: Nat} -> Opetope n -> OSet n
-singletonOSet {n} op = MS.singleton op
-
-export
-unionOSet : {n: Nat} -> OSet n -> OSet n -> OSet n
-unionOSet os1 os2 = MS.union os1 os2
-
-export
-are_equal : (OSet n) -> (OSet n) -> Bool
-are_equal ms1 ms2 = (MS.toList ms1) == (MS.toList ms2)
-
-export
-toListOSet : (OSet n) -> List (Opetope n)
-toListOSet op = MS.toList op
+public export
+Eq (OSet n) where
+    a == b = (MS.toList a) == (MS.toList b)
 
 export
 match : {n: Nat} -> Opetope (S (S n)) -> Bool
-match {n} (Face _ ins out) = are_equal (all_dom `MS.union` out_cod) (all_cod `MS.union` out_cod)
+match {n} (Face _ ins out) = (all_dom `MS.union` out_cod) == (all_cod `MS.union` out_cod)
     where
         all_dom : OSet n
         all_dom = MS.fromList (concat $ map dom ins)

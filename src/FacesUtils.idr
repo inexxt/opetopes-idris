@@ -1,6 +1,6 @@
 module FacesUtils
 
-import Face
+import Face as F
 import Data.AVL.Set as S
 
 -- import Data.SortedMap as M
@@ -16,23 +16,23 @@ FMap : Type
 FMap = (n: Nat) -> FSet n
 
 empty: FMap
-empty n = emptyFSet {n}
+empty n = S.empty
 
 fromFSet : {n: Nat} -> (FSet n) -> FMap
 fromFSet {n} f = \k => case decEq n k of
    Yes prf => replace prf f
-   No _ => emptyFSet
+   No _ => S.empty
 
 singleton : {n: Nat} -> (ProdFace n) -> FMap
 singleton {n} x = \k => case decEq n k of
-   Yes prf => singletonFSet (replace prf x)
-   No _ => emptyFSet
+   Yes prf => F.singleton (replace prf x)
+   No _ => S.empty
 
 get : (n:Nat) -> FMap -> FSet n
 get n om = om n
 
 union : FMap -> FMap -> FMap
-union om1 om2 = \n => unionFSet (get n om1) (get n om2)
+union om1 om2 = \n => S.union (get n om1) (get n om2)
 
 unions : (List FMap) -> FMap
 unions [] = empty

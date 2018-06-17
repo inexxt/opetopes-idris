@@ -202,45 +202,10 @@ public export
 FSet : Nat -> Type
 FSet n = S.Set (ProdFace n)
 
--- Semigroup (FSet n) where
---     a <+> b = a `S.union` b
---
--- Monoid (FSet n) where
---     neutral = S.empty
+export
+singleton : {n: Nat} -> ProdFace n -> FSet n
+singleton {n} op = S.insert op S.empty
 
 export
-emptyFSet : {n: Nat} -> FSet n
-emptyFSet {n} = S.empty
-
-export
-isemptyFSet : {n: Nat} -> FSet n -> Bool
-isemptyFSet {n} s = s == S.empty
-
-export
-singletonFSet : {n: Nat} -> ProdFace n -> FSet n
-singletonFSet {n} op = S.insert op S.empty
-
-export
-unionFSet : {n: Nat} -> FSet n -> FSet n -> FSet n
-unionFSet os1 os2 = S.union os1 os2
-
-export
-unionsFSet : {n: Nat} -> List (FSet n) -> FSet n
-unionsFSet os = foldr S.union S.empty os
-
-
-export
-toListFSet : FSet n -> List (ProdFace n)
-toListFSet os = S.toList os
-
-export
-fromListFSet : List (ProdFace n) -> FSet n
-fromListFSet os = S.fromList os
-
-export
-containsFSet : ProdFace n -> FSet n -> Bool
-containsFSet b op = S.contains b op
-
-export
-insertFSet : ProdFace n -> FSet n -> FSet n
-insertFSet b op = S.insert b op
+unions : {n: Nat} -> List (FSet n) -> FSet n
+unions os = foldr S.union S.empty os

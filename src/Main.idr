@@ -3,7 +3,6 @@ module Main
 import Opetope as O
 import OpetopesUtils
 import Face
-import Contraction
 import Product as P
 
 a: Opetope Z

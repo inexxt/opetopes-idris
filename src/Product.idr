@@ -6,30 +6,28 @@ import Face as F
 import FacesUtils as FU
 
 import Data.AVL.Set as S
+import Data.SortedBag as MS
 
 %access public export
 
-fset_concat : Foldable t => t (FSet n) -> FSet n
-fset_concat xs = foldr (\x, y => x `F.unionFSet` y) F.emptyFSet xs
-
 dfs : FSet n -> FSet (S n) -> FSet (S n) -> ProdFace (S n) -> Opetope k1 -> Opetope k2 -> FSet (S (S n))
 dfs ins used building_blocks target_out p q =
-    let f = F.Face p q (F.toListFSet used) target_out in
+    let f = F.Face p q (S.toList used) target_out in
     if F.is_valid f
-        then F.singletonFSet f
-        else fset_concat [(dfs new_ins
+        then F.singleton f
+        else F.unions [(dfs new_ins
                                new_used
                                building_blocks
                                target_out
-                               p q) | b <- F.toListFSet building_blocks,
-                                      i <- F.toListFSet ins,
-                                      not (F.containsFSet b used),
-                                      let new_ins = (ins `F.unionFSet` (F.fromListFSet (F.dom b))),
-                                      let new_used = (b `F.insertFSet` used)]
+                               p q) | b <- S.toList building_blocks,
+                                      i <- S.toList ins,
+                                      not (S.contains b used),
+                                      let new_ins = (ins `S.union` (S.fromList (F.dom b))),
+                                      let new_used = (b `S.insert` used)]
 
 possible_faces : F.ProdFace (S n) -> List (F.ProdFace (S n)) -> Opetope k1 -> Opetope k2 -> FSet (S (S n))
 possible_faces op building_blocks p q =
-    dfs (F.singletonFSet (F.cod op)) F.emptyFSet (F.fromListFSet building_blocks) op p q
+    dfs (F.singleton (F.cod op)) S.empty (S.fromList building_blocks) op p q
 
 
 mul_0k : O.Opetope Z -> O.Opetope k -> F.ProdFace k
@@ -39,10 +37,10 @@ mul_0k p q = case q of
     (O.Face _ d c) => F.Face p q (map (\s => mul_0k p s) d) (mul_0k p c)
 
 base_case_0k : {k: Nat} -> O.Opetope Z -> O.Opetope k -> FU.FMap
-base_case_0k {k} p q = FU.unions [FU.fromList (map (\s => mul_0k p s) (O.toListOSet $ OU.get n (OU.subopetopes p))) | n <- natRange k]
+base_case_0k {k} p q = FU.unions [FU.fromList (map (\s => mul_0k p s) (MS.toList $ OU.get n (OU.subopetopes p))) | n <- natRange k]
 
 base_case_k0 : {k: Nat} -> O.Opetope k -> O.Opetope Z -> FU.FMap
-base_case_k0 {k} p q = FU.unions [FU.fromList (map (\s => F.flip (mul_0k q s)) (O.toListOSet $ OU.get n (OU.subopetopes p))) | n <- natRange k]
+base_case_k0 {k} p q = FU.unions [FU.fromList (map (\s => F.flip (mul_0k q s)) (MS.toList $ OU.get n (OU.subopetopes p))) | n <- natRange k]
 
 
 getIf : List a -> Bool -> List a
@@ -59,11 +57,11 @@ small_faces p q =
         make f l1 l2 = FU.fromList [f s1 s2 | s1 <- l1,
                                               s2 <- l2]
         subs : O.Opetope k -> (n: Nat) -> List (O.Opetope n)
-        subs op n = O.toListOSet $ OU.get n (OU.subopetopes op)
+        subs op n = MS.toList $ OU.get n (OU.subopetopes op)
 
 big_product : Nat -> FU.FMap -> O.Opetope (S k1) -> O.Opetope (S k2) -> (FU.FMap, Nat)
 big_product k curr_faces p q =
-        if isemptyFSet new_faces then
+        if new_faces == S.empty then
             (curr_faces, k)
         else
             big_product (S k) (FU.fromFSet new_faces) p q
@@ -73,7 +71,7 @@ big_product k curr_faces p q =
         build_new_opetopes : F.ProdFace (S k) -> FSet (S (S k))
         build_new_opetopes op = possible_faces op building_blocks p q where
             building_blocks : List (F.ProdFace (S k))
-            building_blocks = [s | s <- F.toListFSet $ FU.get (S k) curr_faces,
+            building_blocks = [s | s <- S.toList $ FU.get (S k) curr_faces,
                                    op /= s]
         possible_codomains : List (F.ProdFace (S k))
         possible_codomains = [s | s <- faces] ++
@@ -90,10 +88,10 @@ big_product k curr_faces p q =
                                               O.eq (p2 s) q]
                                     ((S k) == maxd && (dim p) > (dim q))) where
             faces : List (ProdFace (S k))
-            faces = F.toListFSet $ curr_faces (S k)
+            faces = S.toList $ curr_faces (S k)
 
         new_faces : F.FSet (S (S k))
-        new_faces = F.unionsFSet $ map build_new_opetopes possible_codomains
+        new_faces = F.unions $ map build_new_opetopes possible_codomains
 
 product : {k1: Nat} -> {k2: Nat} -> O.Opetope k1 -> O.Opetope k2 -> (FU.FMap, Nat)
 product {k1} {k2} p q = case (p, q) of

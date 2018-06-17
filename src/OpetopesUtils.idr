@@ -12,18 +12,18 @@ OMap : Type
 OMap = (n: Nat) -> OSet n
 
 empty: OMap
-empty n = emptyOSet {n}
+empty n = MS.empty
 
 singleton : {n: Nat} -> (Opetope n) -> OMap
 singleton {n} x = \k => case decEq n k of
-    Yes prf => singletonOSet (replace prf x)
-    No _ => emptyOSet
+    Yes prf => MS.singleton (replace prf x)
+    No _ => MS.empty
 
 get : (n:Nat) -> OMap -> OSet n
 get n om = om n
 
 union : OMap -> OMap -> OMap
-union om1 om2 = \n => unionOSet (get n om1) (get n om2)
+union om1 om2 = \n => MS.union (get n om1) (get n om2)
 
 unions : (List OMap) -> OMap
 unions [] = empty
