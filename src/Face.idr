@@ -12,6 +12,13 @@ data ProdFace : Nat -> Type where
     Arrow : O.Opetope k1 -> O.Opetope k2 -> ProdFace Z -> ProdFace Z -> ProdFace (S Z)
     Face : O.Opetope k1 -> O.Opetope k2 -> List (ProdFace (S m)) -> ProdFace (S m) -> ProdFace (S (S m))
 
+public export
+flip : ProdFace n -> ProdFace n
+flip (Point p q) = Point q p
+flip (Arrow p q d c) = Arrow q p (flip d) (flip c)
+flip (Face p q d c) = Face q p (map flip d) (flip c)
+
+
 export
 dom : (ProdFace (S n)) -> List (ProdFace n)
 dom (Arrow _ _ d _) = [d]
@@ -180,11 +187,9 @@ from_arrow_and_point arr pt = let (O.Arrow _ d c) = arr in
     Arrow arr pt (Point d pt) (Point c pt)
 
 
--- we can't just use from_arrow_and_point, because the order p1, p2 is important
 export
 from_point_and_arrow :  O.Opetope Z -> O.Opetope (S Z) -> ProdFace (S Z)
-from_point_and_arrow pt arr = let (O.Arrow _ d c) = arr in
-    Arrow pt arr (Point pt d) (Point pt c)
+from_point_and_arrow pt arr = flip (from_arrow_and_point arr pt)
 
 export
 from_arrow_and_arrow : O.Opetope (S Z) -> O.Opetope (S Z) -> ProdFace (S Z)
@@ -193,7 +198,7 @@ from_arrow_and_arrow arr1 arr2 =
         (O.Arrow _ d2 c2) = arr2 in
             Arrow arr1 arr2 (Point d1 d2) (Point c1 c2)
 
-export
+public export
 FSet : Nat -> Type
 FSet n = S.Set (ProdFace n)
 
@@ -208,12 +213,21 @@ emptyFSet : {n: Nat} -> FSet n
 emptyFSet {n} = S.empty
 
 export
+isemptyFSet : {n: Nat} -> FSet n -> Bool
+isemptyFSet {n} s = s == S.empty
+
+export
 singletonFSet : {n: Nat} -> ProdFace n -> FSet n
 singletonFSet {n} op = S.insert op S.empty
 
 export
 unionFSet : {n: Nat} -> FSet n -> FSet n -> FSet n
 unionFSet os1 os2 = S.union os1 os2
+
+export
+unionsFSet : {n: Nat} -> List (FSet n) -> FSet n
+unionsFSet os = foldr S.union S.empty os
+
 
 export
 toListFSet : FSet n -> List (ProdFace n)

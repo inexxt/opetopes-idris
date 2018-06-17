@@ -23,3 +23,6 @@ embed {n} op = case op of
         (Point p q) => O.Point (name_of_op p q) --O.Point (name p q) -- (O.Point (name p q))
         (Arrow p q d c) => O.Arrow (name_of_op p q) (embed d) (embed c) -- (O.Arrow (name p q) (embed d) (embed c))
         (Face p q d c) =>  O.Face (name_of_op p q) (map embed d) (embed c) -- (O.Face (name p q) (map embed d) (embed c))
+
+--
+Nie można dowodzić properties funkcji, która jest exportowana normalnie, a nie przez public export (kilka godzin..)

@@ -23,13 +23,13 @@ lemma_zero : (dim (Point "a")) = Z
 lemma_zero = Refl
 
 
-export
-mkOpetope : {k: Nat} -> String -> List (Opetope k) -> Opetope k -> Opetope (S k)
-mkOpetope {k} s ds c = case ds of
-    (d::Nil) => case decEq k Z of
-        Yes prf => replace (sym (cong {f=S} prf)) (Arrow s (replace prf d) (replace prf c))
-        No _ => ?hole1 -- (Face s ds c) -- i teraz mam udowodnić, że jest k = S l...
-    _ => ?hole2 -- (Face s ds c) -- i tu też muszę to dowodzić
+-- export
+-- mkOpetope : {k: Nat} -> String -> List (Opetope k) -> Opetope k -> Opetope (S k)
+-- mkOpetope {k} s ds c = case ds of
+--     (d::Nil) => case decEq k Z of
+--         Yes prf => replace (sym (cong {f=S} prf)) (Arrow s (replace prf d) (replace prf c))
+--         No _ => ?hole1 -- (Face s ds c) -- i teraz mam udowodnić, że jest k = S l...
+--     _ => ?hole2 -- (Face s ds c) -- i tu też muszę to dowodzić
 
 
 export
