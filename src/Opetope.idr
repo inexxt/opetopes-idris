@@ -15,9 +15,12 @@ name (Point s) = s
 name (Arrow s _ _) = s
 name (Face s _ _) = s
 
-export
+public export
 dim : {n: Nat} -> Opetope n -> Nat
 dim {n} _ = n
+
+lemma_zero : (dim (Point "a")) = Z
+lemma_zero = Refl
 
 
 export

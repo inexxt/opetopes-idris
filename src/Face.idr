@@ -22,9 +22,10 @@ cod : (ProdFace (S n)) -> (ProdFace n)
 cod (Arrow _ _ _ c) = c
 cod (Face _ _ _ c) = c
 
-export
+public export
 dim : {n: Nat} -> (ProdFace n) -> Nat
 dim {n} _ = n
+
 
 helper_dim: {n: Nat} -> (ProdFace n) -> Nat
 helper_dim (Point _ _) = Z
@@ -32,7 +33,9 @@ helper_dim (Arrow _ _ _ _) = (S Z)
 helper_dim (Face _ _ _ c) = S (dim c)
 
 lemma_dim_eq_helper_dim: {n: Nat} -> (g: ProdFace n) -> dim g = helper_dim g
-lemma_dim_eq_helper_dim = ?hole
+lemma_dim_eq_helper_dim {n = Z} (Point x y) = Refl
+lemma_dim_eq_helper_dim {n = (S Z)} (Arrow x y z w) = Refl
+lemma_dim_eq_helper_dim {n = (S (S m))} (Face x y xs z) = Refl
 
 export
 total
@@ -49,16 +52,16 @@ dim_p2 (Point _ p) = dim p
 dim_p2 (Arrow _ p _ _) = dim p
 dim_p2 (Face _ p _ _) = dim p
 
-lemma_zero : (dim (Point "a")) = Z
-lemma_zero = ?hh11
 
-lemma_of_dim_op : {n:Nat} -> (op: Opetope n) -> (n = (dim op))
-lemma_of_dim_op {n = Z} (Point x) = ?hole_1
-lemma_of_dim_op {n = (S Z)} (Arrow x y z) = ?hole_2
-lemma_of_dim_op {n = (S (S k))} (Face x xs y) = ?hole_3
+lemma_of_dim_op : {n: Nat} -> (op: Opetope n) -> (n = (dim op))
+lemma_of_dim_op {n = Z} (Point x) = Refl
+lemma_of_dim_op {n = (S Z)} (Arrow x y z) = Refl
+lemma_of_dim_op {n = (S (S k))} (Face x xs y) = Refl
 
-lemma_of_dim_face : (g: ProdFace n) -> (n = (dim g))
-lemma_of_dim_face = ?hole6
+lemma_of_dim_face : {n: Nat} -> (g: ProdFace n) -> (n = (dim g))
+lemma_of_dim_face {n = Z} (Point x y) = Refl
+lemma_of_dim_face {n = (S Z)} (Arrow x y z w) = Refl
+lemma_of_dim_face {n = (S (S m))} (Face x y xs z) = Refl
 
 
 export
