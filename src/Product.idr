@@ -8,11 +8,20 @@ import FacesUtils as FU
 import Data.AVL.Set as S
 import Data.SortedBag as MS
 
+import Debug.Trace as D
+
 %access public export
+
+dtrace : (Show a) => a -> a
+dtrace x = D.trace (show x) x
+
+dtrace' : a -> a
+dtrace' x = D.trace "aaaa" x
 
 dfs : FSet n -> FSet (S n) -> FSet (S n) -> ProdFace (S n) -> Opetope k1 -> Opetope k2 -> FSet (S (S n))
 dfs ins used building_blocks target_out p q =
-    let f = F.Face p q (S.toList used) target_out in
+    let f = F.Face p q (S.toList used) target_out
+        dd = dtrace "test" in
     if F.is_valid f
         then F.singleton f
         else F.unions [(dfs new_ins
@@ -51,7 +60,8 @@ small_faces p q =
     let pt_pt = make from_point_and_point (subs p Z) (subs q Z)
         pt_ar = make from_point_and_arrow (subs p Z) (subs q (S Z))
         ar_pt = make from_arrow_and_point (subs p (S Z)) (subs q Z)
-        ar_ar = make from_arrow_and_arrow (subs p (S Z)) (subs q (S Z)) in
+        ar_ar = make from_arrow_and_arrow (subs p (S Z)) (subs q (S Z))
+        dd = dtrace "test" in
     FU.unions [pt_pt, pt_ar, ar_pt, ar_ar] where
         make : (O.Opetope n1 -> O.Opetope n2 -> ProdFace n3) -> List (O.Opetope n1) -> List (O.Opetope n2) -> FU.FMap
         make f l1 l2 = FU.fromList [f s1 s2 | s1 <- l1,
@@ -95,14 +105,18 @@ big_product k curr_faces p q =
 
 product : {k1: Nat} -> {k2: Nat} -> O.Opetope k1 -> O.Opetope k2 -> (FU.FMap, Nat)
 product {k1} {k2} p q = case (p, q) of
-    ((Point _), _) => (base_case_0k p q, dim q)
-    (_, (Point _)) => (base_case_k0 p q, dim p)
-    (Arrow _ _ _, Arrow _ _ _) => big_product (maximum (dim p) (dim q)) (small_faces p q) p q
-    (Face _ _ _, Arrow _ _ _) => big_product (maximum (dim p) (dim q)) (small_faces p q) p q
-    (Arrow _ _ _, Face _ _ _) => big_product (maximum (dim p) (dim q)) (small_faces p q) p q
-    (Face _ _ _, Face _ _ _) => big_product (maximum (dim p) (dim q)) (small_faces p q) p q
+        ((Point _), _) =>  D.trace "x" (base_case_0k p q, dim q)
+        (_, (Point _)) =>  D.trace "y" (base_case_k0 p q, dim p)
+        (Arrow _ _ _, Arrow _ _ _) => D.trace "z" (big_product (maximum (dim p) (dim q)) (small_faces p q) p q)
+        (Face _ _ _, Arrow _ _ _) => D.trace "w" (big_product (maximum (dim p) (dim q)) (small_faces p q) p q)
+        (Arrow _ _ _, Face _ _ _) =>  D.trace "zz" (big_product (maximum (dim p) (dim q)) (small_faces p q) p q)
+        (Face _ _ _, Face _ _ _) =>  D.trace "zzz" (big_product (maximum (dim p) (dim q)) (small_faces p q) p q)
+    where
+        dd : String
+        dd = dtrace "test"
 
 
+-- for some reason I can't do that
 -- product : {k1: Nat} -> {k2: Nat} -> O.Opetope k1 -> O.Opetope k2 -> FU.FMap
 -- product {k1} {k2} p q = case (decEq k1 Z, decEq k2 Z) of
 --     (Yes prf, _) => base_case_0k (replace prf p) q

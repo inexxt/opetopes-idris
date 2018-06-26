@@ -75,6 +75,10 @@ public export
 Eq (OSet n) where
     a == b = (MS.toList a) == (MS.toList b)
 
+public export
+Show (OSet n) where
+    show a = show (MS.toList a)
+
 export
 match : {n: Nat} -> Opetope (S (S n)) -> Bool
 match {n} (Face _ ins out) = (all_dom `MS.union` out_cod) == (all_cod `MS.union` out_cod)

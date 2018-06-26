@@ -42,6 +42,15 @@ fromList : List (ProdFace k) -> FMap
 fromList [] = empty
 fromList (x::xs) = (singleton x) `union` (fromList xs)
 
+Show FMap where
+    show t = show' t 0
+        where
+            show' : FMap -> Nat -> String
+            show' t n = if (p == S.empty) then ""
+                        else ((show p) ++ ", " ++ (show' t (n + 1)))
+                where
+                    p : FSet n
+                    p = t n
 
 dmap: Functor f => (func : a -> b) -> f a -> f (Lazy b)
 dmap func it = map (Delay . func) it

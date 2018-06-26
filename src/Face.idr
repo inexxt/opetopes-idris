@@ -103,6 +103,12 @@ Eq (ProdFace n) => Ord (ProdFace n) where
     compare (Arrow p q _ _) (Arrow p' q' _ _) = lexi (p, q) (p', q')
     compare (Face p q _ _) (Face p' q' _ _) = lexi (p, q) (p', q')
 
+public export
+Show (ProdFace n) where
+    show (Point p q) = "(" ++ (show p) ++ ", " ++ (show q) ++ ")"
+    show (Arrow p q d c) = "todo"
+    show (Face p q d c) = "todo2"
+
 -- instance Subtype (ProdFace dim) where
 --     type SuperType (ProdFace dim) = O.Opetope dim
 
@@ -201,6 +207,10 @@ from_arrow_and_arrow arr1 arr2 =
 public export
 FSet : Nat -> Type
 FSet n = S.Set (ProdFace n)
+
+-- public export
+-- Show (FSet n) where
+--     show t = show (S.toList t)
 
 export
 singleton : {n: Nat} -> ProdFace n -> FSet n

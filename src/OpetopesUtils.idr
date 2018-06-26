@@ -5,9 +5,9 @@ import Data.HVect as HV
 
 import Opetope
 
-%access export
+%access public export
 
-export
+
 OMap : Type
 OMap = (n: Nat) -> OSet n
 
@@ -29,7 +29,7 @@ unions : (List OMap) -> OMap
 unions [] = empty
 unions (x::xs) = x `union` (unions xs)
 
-export
+
 subopetopes : Opetope n -> OMap
 subopetopes op = case op of
     (Point x) => singleton op
@@ -46,9 +46,20 @@ subouts op = case op of
 dmap: Functor f => (func : a -> b) -> f a -> f (Lazy b)
 dmap func it = map (Delay . func) it
 
-export
+
 is_non_degenerated : Opetope n -> Bool
 is_non_degenerated op = case op of
     (Point _) => True
     (Arrow _ d c) => c /= d
     (Face _ d c) => (and (dmap (is_non_degenerated) d)) && (is_non_degenerated c)
+
+
+Show OMap where
+    show t = show' t 0
+        where
+            show' : OMap -> Nat -> String
+            show' t n = if (p == MS.empty) then ""
+                        else ((show p) ++ ", " ++ (show' t (n + 1)))
+                where
+                    p : OSet n
+                    p = t n
