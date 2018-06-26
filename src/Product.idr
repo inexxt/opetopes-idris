@@ -110,10 +110,7 @@ product {k1} {k2} p q = case (p, q) of
         (Arrow _ _ _, Arrow _ _ _) => D.trace "z" (big_product (maximum (dim p) (dim q)) (small_faces p q) p q)
         (Face _ _ _, Arrow _ _ _) => D.trace "w" (big_product (maximum (dim p) (dim q)) (small_faces p q) p q)
         (Arrow _ _ _, Face _ _ _) =>  D.trace "zz" (big_product (maximum (dim p) (dim q)) (small_faces p q) p q)
-        (Face _ _ _, Face _ _ _) =>  D.trace "zzz" (big_product (maximum (dim p) (dim q)) (small_faces p q) p q)
-    where
-        dd : String
-        dd = dtrace "test"
+        (Face _ _ _, Face _ _ _) =>  D.trace "zzz" (big_product (maximum (dim p) (dim q)) (dtrace (small_faces p q)) p q)
 
 
 -- for some reason I can't do that
