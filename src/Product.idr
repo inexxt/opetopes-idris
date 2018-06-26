@@ -71,20 +71,22 @@ small_faces p q =
 
 big_product : Nat -> FU.FMap -> O.Opetope (S k1) -> O.Opetope (S k2) -> (FU.FMap, Nat)
 big_product k curr_faces p q =
-        if new_faces == S.empty then
+        if new_faces == S.empty && k > 1 then
             (curr_faces, k)
         else
-            big_product (S k) (FU.fromFSet new_faces) p q
+            big_product (S k) (FU.union (FU.fromFSet new_faces) curr_faces) p q
     where
         maxd : Nat
         maxd = (maximum (dim p) (dim q))
         build_new_opetopes : F.ProdFace (S k) -> FSet (S (S k))
-        build_new_opetopes op = possible_faces op building_blocks p q where
+        build_new_opetopes op = D.trace "build_new_opetopes" $$ possible_faces (dtrace op) (dtrace building_blocks) p q where
             building_blocks : List (F.ProdFace (S k))
             building_blocks = [s | s <- S.toList $ FU.get (S k) curr_faces,
                                    op /= s]
         possible_codomains : List (F.ProdFace (S k))
-        possible_codomains = [s | s <- faces] ++
+        possible_codomains = [s | s <- faces,
+                                       O.eq (p1 s) p,
+                                       O.eq (p2 s) q] ++
                              (getIf [s | s <- faces,
                                               O.eq (p1 s) (cod p),
                                               O.eq (p2 s) (cod q)]
@@ -107,10 +109,10 @@ product : {k1: Nat} -> {k2: Nat} -> O.Opetope k1 -> O.Opetope k2 -> (FU.FMap, Na
 product {k1} {k2} p q = case (p, q) of
         ((Point _), _) =>  D.trace "x" (base_case_0k p q, dim q)
         (_, (Point _)) =>  D.trace "y" (base_case_k0 p q, dim p)
-        (Arrow _ _ _, Arrow _ _ _) => D.trace "z" (big_product (maximum (dim p) (dim q)) (small_faces p q) p q)
+        (Arrow _ _ _, Arrow _ _ _) => D.trace "z" (big_product (0) (small_faces p q) p q)
         (Face _ _ _, Arrow _ _ _) => D.trace "w" (big_product (maximum (dim p) (dim q)) (small_faces p q) p q)
         (Arrow _ _ _, Face _ _ _) =>  D.trace "zz" (big_product (maximum (dim p) (dim q)) (small_faces p q) p q)
-        (Face _ _ _, Face _ _ _) =>  D.trace "zzz" (big_product (maximum (dim p) (dim q)) (dtrace (small_faces p q)) p q)
+        (Face _ _ _, Face _ _ _) =>  D.trace "zzz" (big_product (maximum (dim p) (dim q)) (small_faces p q) p q)
 
 
 -- for some reason I can't do that

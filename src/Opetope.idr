@@ -35,8 +35,8 @@ lemma_zero = Refl
 export
 Show (Opetope n) where
     show (Point s)     = s
-    show (Arrow s d c) = unwords $ [(show ((dim c) + 1)), "[", s, ":", (show d), " -> ", (show c), "]"]
-    show (Face s d c)  = unwords $ [(show ((dim c) + 1)), "[", s, ":", (show d), " -> ", (show c), "]"]
+    show (Arrow s d c) = unwords $ ["(", s, ": ", (show d), " -> ", (show c), ")"]
+    show (Face s d c)  = unwords $ ["(", s, ": ", (show d), " -> ", (show c), ")"]
 
 public export
 Eq (Opetope n) where

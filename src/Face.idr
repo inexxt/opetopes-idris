@@ -105,9 +105,9 @@ Eq (ProdFace n) => Ord (ProdFace n) where
 
 public export
 Show (ProdFace n) where
-    show (Point p q) = "(" ++ (show p) ++ ", " ++ (show q) ++ ")"
-    show (Arrow p q d c) = "todo"
-    show (Face p q d c) = "todo2"
+    show (Point p q) = show ((p, q))
+    show (Arrow p q d c) = "(" ++ show [d] ++ " -> " ++ show c ++ ")" -- "(" ++ show ((p, q)) ++ ": " ++ show [d] ++ " -> " ++ show c ++ ")"
+    show (Face p q d c) = "(" ++ show d ++ " -> " ++ show c ++ ")" -- "(" ++ show ((p, q)) ++ ": " ++ show d ++ "->" ++ show c ++ ")"
 
 -- instance Subtype (ProdFace dim) where
 --     type SuperType (ProdFace dim) = O.Opetope dim
