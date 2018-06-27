@@ -26,3 +26,9 @@ embed {n} op = case op of
 
 --
 Nie można dowodzić properties funkcji, która jest exportowana normalnie, a nie przez public export (kilka godzin..)
+
+Kurwa:
+natEnumFromTo 0 1 = [0, 1]
+natEnumFromTo 1 0 = [0, 1]
+
+natRange 2 = [0, 1]

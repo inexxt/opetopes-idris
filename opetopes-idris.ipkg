@@ -11,7 +11,7 @@ bugtracker = https://github.com/githubuser/opetopes-idris/issues
 
 sourcedir  = src
 modules    = Test
-opts = "-p containers -p contrib --typeintype"
-tests      = Test.spec
+opts       = "-p containers -p contrib --typeintype"
+tests      = Test.Opetope.testEyeMatch
 executable = opetopesidris
 main       = Main

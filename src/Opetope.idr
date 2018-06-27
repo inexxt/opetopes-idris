@@ -2,6 +2,9 @@ module Opetope
 
 import Data.SortedBag as MS
 
+import Dd
+import Debug.Trace as D
+
 public export
 data Opetope : Nat -> Type where
     Point : String -> Opetope Z
@@ -35,16 +38,18 @@ lemma_zero = Refl
 export
 Show (Opetope n) where
     show (Point s)     = s
-    show (Arrow s d c) = unwords $ ["(", s, ": ", (show d), " -> ", (show c), ")"]
-    show (Face s d c)  = unwords $ ["(", s, ": ", (show d), " -> ", (show c), ")"]
+    show (Arrow s d c) = "(" ++ s ++ ": " ++ show [d] ++ " -> " ++ show c ++ ")"
+    show (Face s d c)  = "(" ++ s ++ ": " ++ show d ++ " -> " ++ show c ++ ")"
 
+
+-- TODO there should be sort!!!
 public export
 Eq (Opetope n) where
     (Point s1) == (Point s2) = s1 == s2
     (Arrow s1 d1 c1) == (Arrow s2 d2 c2) = (s1, d1, c1) == (s2, d2, c2)
     (Face s1 d1 c1) == (Face s2 d2 c2) = (s1, d1, c1) == (s2, d2, c2)
 
-
+-- TODO there should be sort!!!
 public export
 Eq (Opetope n) => Ord (Opetope n) where
     compare (Point s1) (Point s2) = compare s1 s2
@@ -71,6 +76,7 @@ public export
 OSet : Nat -> Type
 OSet n = MS.SortedBag (Opetope n)
 
+-- should work, since toList is keeping lists sorted
 public export
 Eq (OSet n) where
     a == b = (MS.toList a) == (MS.toList b)
@@ -81,7 +87,7 @@ Show (OSet n) where
 
 export
 match : {n: Nat} -> Opetope (S (S n)) -> Bool
-match {n} (Face _ ins out) = (all_dom `MS.union` out_cod) == (all_cod `MS.union` out_cod)
+match {n} (Face _ ins out) = (all_dom `MS.union` out_cod) == (all_cod `MS.union` out_dom)
     where
         all_dom : OSet n
         all_dom = MS.fromList (concat $ map dom ins)

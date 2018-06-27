@@ -4,6 +4,7 @@ import Data.SortedBag as MS
 import Data.HVect as HV
 
 import Opetope
+import Utils as U
 
 %access public export
 
@@ -43,15 +44,11 @@ subouts op = case op of
     (Face s d c) => unions [singleton c, (unions (map subouts d)), subouts c]
 
 
-dmap: Functor f => (func : a -> b) -> f a -> f (Lazy b)
-dmap func it = map (Delay . func) it
-
-
 is_non_degenerated : Opetope n -> Bool
 is_non_degenerated op = case op of
     (Point _) => True
     (Arrow _ d c) => c /= d
-    (Face _ d c) => (and (dmap (is_non_degenerated) d)) && (is_non_degenerated c)
+    (Face _ d c) => (U.and_ (map is_non_degenerated d)) && (is_non_degenerated c)
 
 
 Show OMap where
