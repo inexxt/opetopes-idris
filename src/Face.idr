@@ -62,16 +62,17 @@ dim_p1 (Face p _ _ _) = dim p
 export
 total
 dim_p2 : ProdFace n -> Nat
-dim_p2 (Point _ p) = dim p
-dim_p2 (Arrow _ p _ _) = dim p
-dim_p2 (Face _ p _ _) = dim p
+dim_p2 (Point _ q) = dim q
+dim_p2 (Arrow _ q _ _) = dim q
+dim_p2 (Face _ q _ _) = dim q
 
-
+total
 lemma_of_dim_op : {n: Nat} -> (op: Opetope n) -> (n = (dim op))
 lemma_of_dim_op {n = Z} (Point x) = Refl
 lemma_of_dim_op {n = (S Z)} (Arrow x y z) = Refl
 lemma_of_dim_op {n = (S (S k))} (Face x xs y) = Refl
 
+total
 lemma_of_dim_face : {n: Nat} -> (g: ProdFace n) -> (n = (dim g))
 lemma_of_dim_face {n = Z} (Point x y) = Refl
 lemma_of_dim_face {n = (S Z)} (Arrow x y z w) = Refl
@@ -88,25 +89,26 @@ p1 g = case g of
 export
 p2 : (g: ProdFace n) -> Opetope (dim_p2 g)
 p2 g = case g of
-    (Point _ p) => replace (lemma_of_dim_op p) p
-    (Arrow _ p _ _) => replace (lemma_of_dim_op p) p
-    (Face _ p _ _) => replace (lemma_of_dim_op p) p
+    (Point _ q) => replace (lemma_of_dim_op q) q
+    (Arrow _ q _ _) => replace (lemma_of_dim_op q) q
+    (Face _ q _ _) => replace (lemma_of_dim_op q) q
 
-public export
-Eq (ProdFace n) where
-    (Point p q) == (Point p' q')           = (p, q) == (p', q')
-    (Arrow p q d c) == (Arrow p' q' d' c') = O.eq p p' &&
-                                             O.eq q q' &&
-                                             (c, d) == (c', d')
-    (Face p q d c) == (Face p' q' d' c')   = O.eq p p' &&
-                                             O.eq q q' &&
-                                             (c, d) == (c', d')
 mutual
+    public export
+    Eq (ProdFace n) where
+        (Point p q) == (Point p' q')           = (p, q) == (p', q')
+        (Arrow p q d c) == (Arrow p' q' d' c') = O.eq p p' &&
+                                                 O.eq q q' &&
+                                                 (c, d) == (c', d')
+        (Face p q d c) == (Face p' q' d' c')   = O.eq p p' &&
+                                                 O.eq q q' &&
+                                                 (c, sort d) == (c', sort d')
+
     public export
     Eq (ProdFace n) => Ord (ProdFace n) where
         compare (Point p q) (Point p' q')           = compare (p, q) (p', q')
         compare (Arrow p q d c) (Arrow p' q' d' c') = lexi_order (p, q, d, c) (p', q', d', c')
-        compare (Face p q d c) (Face p' q' d' c')   = lexi_order (p, q, d, c) (p', q', d', c')
+        compare (Face p q d c) (Face p' q' d' c')   = lexi_order (p, q, sort d, c) (p', q', sort d', c')
 
     lexi_order : (Ord a) => (Opetope n1, Opetope n2, a) -> (Opetope k1, Opetope k2, a) -> Ordering
     lexi_order (a1, a2, x) (b1, b2, y) = case (O.comp a1 b1, O.comp a2 b2, compare x y) of
@@ -128,8 +130,8 @@ mutual
 public export
 Show (ProdFace n) where
     show (Point p q) = show ((p, q))
-    show (Arrow p q d c) = "(" ++ show [d] ++ " -> " ++ show c ++ ")" -- "(" ++ show ((p, q)) ++ ": " ++ show [d] ++ " -> " ++ show c ++ ")"
-    show (Face p q d c) = "(" ++ show d ++ " -> " ++ show c ++ ")" -- "(" ++ show ((p, q)) ++ ": " ++ show d ++ "->" ++ show c ++ ")"
+    show (Arrow p q d c) = "(" ++ show [d] ++ " -> " ++ show c ++ ")" --"(" ++ show ((p, q)) ++ ": " ++ show [d] ++ " -> " ++ show c ++ ")"
+    show (Face p q d c) = "(" ++ show d ++ "->" ++ show c ++ ")" -- "(" ++ show ((p, q)) ++ ": " ++ show d ++ "->" ++ show c ++ ")"
 
 -- instance Subtype (ProdFace dim) where
 --     type SuperType (ProdFace dim) = O.Opetope dim
@@ -158,60 +160,28 @@ match op = case op of
 --            -> ((t: ProdFace n) -> Opetope (dim_px t))
 
 
-all_eq : Opetope k
-       -> List (ProdFace n)
-       -> (dim_px: ProdFace n -> Nat)
-       -> (px: (t: ProdFace n) -> Opetope (dim_px t))
-       -> Bool
-all_eq p [] _ _ = True
-all_eq p (x::Nil) _ px = eq p (px x)
-all_eq p (x::xs) dim_px px = (eq p (px x)) && (all_eq p xs dim_px px)
-
-
-
--- finally breaking from dependent types to Maybe monad
--- but there is no other way, since I have no control over internals
--- of opetopes projections inside ProdFace, so I can't construct Opetope n
--- deep_p1 : {n: Nat} -> (g: ProdFace n) -> Maybe (Opetope n)
--- deep_p1 {n} g =
---     case decEq (dim_p1 g) n of
---         Yes prf => case g of
---             (Point p _) => Just (O.Point (name p))
---             (Arrow p _ d c) => do
---                 d' <- deep_p1 d
---                 c' <- deep_p1 c
---                 pure (O.Arrow (name p) d' c')
---             (Face p _ d c) =>  do
---                 d' <- sequence (map deep_p1 d)
---                 c' <- deep_p1 c
---                 pure (O.Face (name p) d' c')
---         No _ => Nothing
+-- all_eq : Opetope k
+--        -> List (ProdFace n)
+--        -> (dim_px: ProdFace n -> Nat)
+--        -> (px: (t: ProdFace n) -> Opetope (dim_px t))
+--        -> Bool
+-- all_eq p [] _ _ = True
+-- all_eq p (x::Nil) _ px = eq p (px x)
+-- all_eq p (x::xs) dim_px px = (eq p (px x)) && (all_eq p xs dim_px px)
 --
--- -- TODO contract should look at both p1 and p2
--- mutual
---     is_valid_contraction : ProdFace n -> Bool
---     is_valid_contraction contr = case contr of
---             (Point _ _) => True
---             (Arrow _ _ _ _) => contract contr -- can't unify here
---             (Face _ _ _ _) => contract contr
---
---     contract : {k: Nat} -> ProdFace (S k) -> Bool
---     contract {k} contr = case compare (S k) (O.dim (p1 contr)) of
---         EQ => case deep_p1 contr of
---             (Just x) => eq (p1 contr) x
---             Nothing => False
---         LT => False
---         GT => if (eq (p1 contr) (p1 (cod contr)))
---                 && (all_eq (p1 contr) ((cod contr)::(dom contr)) dim_p1 p1)
---             then is_valid_contraction (cod contr)
---             else dt "eq1" $ False
 
-
+all_eq : List (Opetope k) -> Opetope l -> Bool
+all_eq ls op = U.and_ (map (\x => O.eq x op) ls)
 
 transform_n_k : {n: Nat} -> (k: Nat) -> Opetope n -> Maybe (Opetope k)
 transform_n_k k op = case decEq (dim op) k of
         Yes prf => Just (replace prf op)
         No _ => Nothing
+
+contracted_eq : {k1: Nat} -> Opetope k1 -> Opetope k2 -> Bool
+contracted_eq {k1=Z} op1 op2 = O.eq op1 op2
+contracted_eq {k1=(S l)} op1 op2 = O.eq op1 op2 || ((all_eq ((O.cod op1)::(O.dom op1)) op2) &&
+                                         contracted_eq (cod op1) op2)
 
 deep_p1_m : {n: Nat} -> (g: ProdFace n) -> Bool
 deep_p1_m (Point p _) = True
@@ -222,7 +192,7 @@ deep_p1_m (Arrow p _ d c) = case p of
 deep_p1_m {n = (S (S m))} (Face p _ d c) =
     (U.and_ (map deep_p1_m d)) && (deep_p1_m c) && case out of
             Nothing => False
-            (Just x) => O.match (O.Face "" ins x)
+            (Just x) => contracted_eq (O.Face (name p) ins x) p
     where
         ins : List (Opetope (S m))
         ins = catMaybes $ map (\x => transform_n_k (S m) (p1 x)) d
@@ -230,9 +200,26 @@ deep_p1_m {n = (S (S m))} (Face p _ d c) =
         out = transform_n_k (S m) (p1 c)
 
 
+deep_p2_m : {n: Nat} -> (g: ProdFace n) -> Bool
+deep_p2_m (Point _ q) = True
+deep_p2_m (Arrow _ q d c) = case q of
+    (O.Point _) => O.eq (p2 d) (p2 c) && O.eq q (p2 c)
+    (O.Arrow _ st fn) => O.eq (p2 d) st && O.eq (p2 c) fn
+    _ => False
+deep_p2_m {n = (S (S m))} (Face _ q d c) = -- TODO I don't do anything with q
+    (U.and_ (map deep_p2_m d)) && (deep_p2_m c) && case out of
+            Nothing => False
+            (Just x) => contracted_eq (O.Face (name q) ins x) q
+    where
+        ins : List (Opetope (S m))
+        ins = catMaybes $ map (\x => transform_n_k (S m) (p2 x)) d
+        out : Maybe (Opetope (S m))
+        out = transform_n_k (S m) (p2 c)
+
+
 export
 is_valid : ProdFace n -> Bool
-is_valid g = match g && deep_p1_m g
+is_valid g = match g && deep_p1_m g && deep_p2_m g
 
 -- --TODO shouldn't match work recursivly?
 -- --TODO shouldn't verify work recursivly?
@@ -271,5 +258,5 @@ singleton : {n: Nat} -> ProdFace n -> FSet n
 singleton {n} op = S.insert op S.empty
 
 export
-unions : {n: Nat} -> List (FSet n) -> FSet n
+unions : (Foldable t) => t (FSet n) -> FSet n
 unions os = foldr S.union S.empty os

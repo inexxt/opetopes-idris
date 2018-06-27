@@ -42,19 +42,18 @@ Show (Opetope n) where
     show (Face s d c)  = "(" ++ s ++ ": " ++ show d ++ " -> " ++ show c ++ ")"
 
 
--- TODO there should be sort!!!
-public export
-Eq (Opetope n) where
-    (Point s1) == (Point s2) = s1 == s2
-    (Arrow s1 d1 c1) == (Arrow s2 d2 c2) = (s1, d1, c1) == (s2, d2, c2)
-    (Face s1 d1 c1) == (Face s2 d2 c2) = (s1, d1, c1) == (s2, d2, c2)
+mutual
+    public export
+    Eq (Opetope n) where
+        (Point s1) == (Point s2) = s1 == s2
+        (Arrow s1 d1 c1) == (Arrow s2 d2 c2) = (s1, d1, c1) == (s2, d2, c2)
+        (Face s1 d1 c1) == (Face s2 d2 c2) = (s1, sort d1, c1) == (s2, sort d2, c2)
 
--- TODO there should be sort!!!
-public export
-Eq (Opetope n) => Ord (Opetope n) where
-    compare (Point s1) (Point s2) = compare s1 s2
-    compare (Arrow s1 d1 c1) (Arrow s2 d2 c2) = compare (s1, d1, c1) (s2, d2, c2)
-    compare (Face s1 d1 c1) (Face s2 d2 c2) = compare (s1, d1, c1) (s2, d2, c2)
+    public export
+    Eq (Opetope n) => Ord (Opetope n) where
+        compare (Point s1) (Point s2) = compare s1 s2
+        compare (Arrow s1 d1 c1) (Arrow s2 d2 c2) = compare (s1, d1, c1) (s2, d2, c2)
+        compare (Face s1 d1 c1) (Face s2 d2 c2) = compare (s1, sort d1, c1) (s2, sort d2, c2)
 
 export
 build_op : (n: Nat) -> Opetope n

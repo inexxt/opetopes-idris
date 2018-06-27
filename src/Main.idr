@@ -45,7 +45,7 @@ p : F.ProdFace (S (S Z))
 p = F.Face ab1 cd1 [ar1, ar2] ar3
 
 op : String
-op = show $ (P.product ab1 cd1)
+op = show $ (P.product alpha cd1)
 
 main : IO ()
 main = putStrLn $ op
