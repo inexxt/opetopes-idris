@@ -3,6 +3,7 @@ module Face
 import Opetope as O
 import OpetopesUtils
 import Data.AVL.Set as S
+import Data.SortedBag as MS
 -- import Subtype
 
 import Dd
@@ -119,19 +120,13 @@ mutual
         _ => GT
 
 
- -- comp : {n1: Nat} -> {n2: Nat} -> ProdFace n1 -> ProdFace n2 -> Ordering
- -- comp {n1} {n2} op1 op2 = case decEq n1 n2 of
- --     Yes prf => compare (replace prf op1) op2
- --     No _ => compare n1 n2
- --
-
-
-
 public export
 Show (ProdFace n) where
-    show (Point p q) = show ((p, q))
-    show (Arrow p q d c) = "(" ++ show [d] ++ " -> " ++ show c ++ ")" --"(" ++ show ((p, q)) ++ ": " ++ show [d] ++ " -> " ++ show c ++ ")"
-    show (Face p q d c) = "(" ++ show d ++ "->" ++ show c ++ ")" -- "(" ++ show ((p, q)) ++ ": " ++ show d ++ "->" ++ show c ++ ")"
+    show (Point p q) = show p ++ show q
+    show (Arrow p q d c) = (show $ 1) ++ "!(" ++ show [d] ++ " -> " ++ show c ++ ")"
+    show (Face p q d c) = (show $ dim c + 1) ++ "!(" ++ show d ++ "->" ++ show c ++ ")"
+    -- show (Arrow p q d c) = (show $ 1) ++ "!(" ++ show ((p, q)) ++ ": " ++ show [d] ++ " -> " ++ show c ++ ")"
+    -- show (Face p q d c) = (show $ dim c + 1) ++ "!(" ++ show ((p, q)) ++ ": " ++ show d ++ "->" ++ show c ++ ")"
 
 -- instance Subtype (ProdFace dim) where
 --     type SuperType (ProdFace dim) = O.Opetope dim
@@ -160,16 +155,6 @@ match op = case op of
 --            -> ((t: ProdFace n) -> Opetope (dim_px t))
 
 
--- all_eq : Opetope k
---        -> List (ProdFace n)
---        -> (dim_px: ProdFace n -> Nat)
---        -> (px: (t: ProdFace n) -> Opetope (dim_px t))
---        -> Bool
--- all_eq p [] _ _ = True
--- all_eq p (x::Nil) _ px = eq p (px x)
--- all_eq p (x::xs) dim_px px = (eq p (px x)) && (all_eq p xs dim_px px)
---
-
 all_eq : List (Opetope k) -> Opetope l -> Bool
 all_eq ls op = U.and_ (map (\x => O.eq x op) ls)
 
@@ -178,10 +163,39 @@ transform_n_k k op = case decEq (dim op) k of
         Yes prf => Just (replace prf op)
         No _ => Nothing
 
-contracted_eq : {k1: Nat} -> Opetope k1 -> Opetope k2 -> Bool
-contracted_eq {k1=Z} op1 op2 = O.eq op1 op2
-contracted_eq {k1=(S l)} op1 op2 = O.eq op1 op2 || ((all_eq ((O.cod op1)::(O.dom op1)) op2) &&
-                                         contracted_eq (cod op1) op2)
+-- contracted_eq : {k1: Nat} -> Opetope k1 -> Opetope k2 -> Bool
+-- contracted_eq {k1=Z} op1 op2 = O.eq op1 op2
+-- contracted_eq {k1=(S l)} op1 op2 = O.eq op1 op2 || ((all_eq ((O.cod op1)::(O.dom op1)) op2) &&
+--                                          contracted_eq (cod op1) op2)
+
+-- deep_p1_m : {n: Nat} -> (g: ProdFace n) -> Bool
+-- deep_p1_m (Point p _) = True
+-- deep_p1_m (Arrow p _ d c) = case p of
+--     (O.Point _) => O.eq (p1 d) (p1 c) && O.eq p (p1 c)
+--     (O.Arrow _ st fn) => O.eq (p1 d) st && O.eq (p1 c) fn
+--     _ => False
+-- deep_p1_m {n = (S (S m))} (Face p _ d c) =
+--     (U.and_ (map deep_p1_m d)) && (deep_p1_m c) && case out of
+--             Nothing => False
+--             (Just x) => contracted_eq (O.Face (name p) ins x) p
+--     where
+--         ins : List (Opetope (S m))
+--         ins = catMaybes $ map (\x => transform_n_k (S m) (p1 x)) d
+--         out : Maybe (Opetope (S m))
+--         out = transform_n_k (S m) (p1 c)
+
+
+all_eq_lsts : List (Opetope k1) -> List (Opetope k2) -> Bool
+all_eq_lsts (x::xs) (y::ys) = case decEq (dim x) (dim y) of
+    Yes prf => (MS.fromList (replace prf xs)) == (MS.fromList ys)
+    No _ => False
+
+contracted_eq' : {k1: Nat} -> {k2: Nat} -> List (Opetope k1) -> Opetope k1 -> Opetope k2 -> Bool
+contracted_eq' {k1=Z} {k2=Z} ins out op = all_eq (out::ins) op
+contracted_eq' {k1=(S l1)} {k2=(S l2)} ins out op = (O.eq (cod op) out && all_eq_lsts ins (dom op)) ||
+                            (all_eq ins out && contracted_eq' (dom out) (cod out) op)
+contracted_eq' {k1=Z} {k2=(S l2)} ins out op = (O.eq (cod op) out && all_eq_lsts ins (dom op))
+contracted_eq' {k1=(S l1)} {k2=Z} ins out op = (all_eq ins out && contracted_eq' (dom out) (cod out) op)
 
 deep_p1_m : {n: Nat} -> (g: ProdFace n) -> Bool
 deep_p1_m (Point p _) = True
@@ -190,14 +204,12 @@ deep_p1_m (Arrow p _ d c) = case p of
     (O.Arrow _ st fn) => O.eq (p1 d) st && O.eq (p1 c) fn
     _ => False
 deep_p1_m {n = (S (S m))} (Face p _ d c) =
-    (U.and_ (map deep_p1_m d)) && (deep_p1_m c) && case out of
-            Nothing => False
-            (Just x) => contracted_eq (O.Face (name p) ins x) p
+        (U.and_ (map deep_p1_m d)) && (deep_p1_m c) && (contracted_eq' ins out p)
     where
-        ins : List (Opetope (S m))
-        ins = catMaybes $ map (\x => transform_n_k (S m) (p1 x)) d
-        out : Maybe (Opetope (S m))
-        out = transform_n_k (S m) (p1 c)
+        out : Opetope (dim_p1 c)
+        out = p1 c
+        ins : List (Opetope (dim_p1 c))
+        ins = catMaybes $ map (\x => transform_n_k (dim $ p1 c) (p1 x)) d
 
 
 deep_p2_m : {n: Nat} -> (g: ProdFace n) -> Bool
@@ -206,23 +218,19 @@ deep_p2_m (Arrow _ q d c) = case q of
     (O.Point _) => O.eq (p2 d) (p2 c) && O.eq q (p2 c)
     (O.Arrow _ st fn) => O.eq (p2 d) st && O.eq (p2 c) fn
     _ => False
-deep_p2_m {n = (S (S m))} (Face _ q d c) = -- TODO I don't do anything with q
-    (U.and_ (map deep_p2_m d)) && (deep_p2_m c) && case out of
-            Nothing => False
-            (Just x) => contracted_eq (O.Face (name q) ins x) q
+deep_p2_m {n = (S (S m))} (Face _ q d c) =
+        (U.and_ (map deep_p2_m d)) && (deep_p2_m c) && (contracted_eq' ins out q)
     where
-        ins : List (Opetope (S m))
-        ins = catMaybes $ map (\x => transform_n_k (S m) (p2 x)) d
-        out : Maybe (Opetope (S m))
-        out = transform_n_k (S m) (p2 c)
+        out : Opetope (dim_p2 c)
+        out = p2 c
+        ins : List (Opetope (dim_p2 c))
+        ins = catMaybes $ map (\x => transform_n_k (dim $ p2 c) (p2 x)) d
 
 
 export
-is_valid : ProdFace n -> Bool
-is_valid g = match g && deep_p1_m g && deep_p2_m g
+is_valid : {n: Nat} -> ProdFace n -> Bool
+is_valid {n} g = match g && deep_p1_m g && deep_p2_m g
 
--- --TODO shouldn't match work recursivly?
--- --TODO shouldn't verify work recursivly?
 
 export
 from_point_and_point : O.Opetope Z -> O.Opetope Z -> ProdFace Z

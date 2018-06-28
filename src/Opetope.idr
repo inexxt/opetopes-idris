@@ -5,6 +5,9 @@ import Data.SortedBag as MS
 import Dd
 import Debug.Trace as D
 
+import Utils as U
+
+
 public export
 data Opetope : Nat -> Type where
     Point : String -> Opetope Z
@@ -85,16 +88,18 @@ Show (OSet n) where
     show a = show (MS.toList a)
 
 export
-match : {n: Nat} -> Opetope (S (S n)) -> Bool
-match {n} (Face _ ins out) = (all_dom `MS.union` out_cod) == (all_cod `MS.union` out_dom)
+match : {n: Nat} -> Opetope n -> Bool
+match {n=Z} _ = True
+match {n=(S Z)} _ = True
+match {n=(S (S k))} (Face _ ins out) = (all_dom `MS.union` out_cod) == (all_cod `MS.union` out_dom) && U.and_ (map match ins) && match out
     where
-        all_dom : OSet n
+        all_dom : OSet k
         all_dom = MS.fromList (concat $ map dom ins)
-        out_dom : OSet n
+        out_dom : OSet k
         out_dom = MS.fromList (dom out)
-        all_cod : OSet n
+        all_cod : OSet k
         all_cod = MS.fromList (map cod ins)
-        out_cod : OSet n
+        out_cod : OSet k
         out_cod = MS.singleton (cod out)
 
 export

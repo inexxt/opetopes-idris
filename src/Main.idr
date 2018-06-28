@@ -34,18 +34,31 @@ pBC = F.Point b c
 pBD: F.ProdFace Z
 pBD = F.Point b d
 
-ar1: F.ProdFace (S Z)
-ar1 = (F.Arrow a cd1 pAC pAD)
-ar2: F.ProdFace (S Z)
-ar2 = (F.Arrow ab1 d pAD pBD)
-ar3: F.ProdFace (S Z)
-ar3 = (F.Arrow ab1 cd1 pAC pBD)
+aACAD: F.ProdFace (S Z)
+aACAD = (F.Arrow a cd1 pAC pAD)
+aADBD1: F.ProdFace (S Z)
+aADBD1 = (F.Arrow ab1 d pAD pBD)
+aACBD1: F.ProdFace (S Z)
+aACBD1 = (F.Arrow ab1 cd1 pAC pBD)
+aACBD2: F.ProdFace (S Z)
+aACBD2 = (F.Arrow ab2 cd1 pAC pBD)
 
-p : F.ProdFace (S (S Z))
-p = F.Face ab1 cd1 [ar1, ar2] ar3
+s1 : F.ProdFace 2
+s1 = F.Face ab1 cd1 [aACAD, aADBD1] aACBD1
+s2 : ProdFace 2
+s2 = F.Face alpha cd1 [aACAD, aADBD1] aACBD2
+s3 : ProdFace 2
+s3 = F.Face alpha cd1 [aACBD1] aACBD2
+
+sd : ProdFace 3
+sd = F.Face alpha cd1 [s3, s1] s2
+
+-- p : F.ProdFace (S (S Z))
+-- p = F.Face ab1 cd1 [aACAD, aADBD] aACBD
 
 op : String
 op = show $ (P.product alpha cd1)
 
+-- main = putStrLn $ (show $ is_valid sd)
 main : IO ()
-main = putStrLn $ op
+main = putStrLn $ (show $ op)

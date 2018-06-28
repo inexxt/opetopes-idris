@@ -46,8 +46,8 @@ Show FMap where
     show t = show' t 0
         where
             show' : FMap -> Nat -> String
-            show' t n = if (p == S.empty) && n > 2 then "\n"
-                        else (show n ++ " :: " ++ (show p) ++ "\n" ++ (show' t (n + 1)))
+            show' t n = if (p == S.empty) && n > 2 then " \n "
+                        else (show n ++ "/" ++ show (size p) ++ " :: " ++ (show p) ++ " \n " ++ (show' t (n + 1)))
                 where
                     p : FSet n
                     p = t n

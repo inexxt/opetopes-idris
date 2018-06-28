@@ -18,7 +18,7 @@ import Utils as U
 dfs : FSet n -> FSet (S n) -> FSet (S n) -> ProdFace (S n) -> Opetope k1 -> Opetope k2 -> FSet (S (S n))
 dfs ins used building_blocks target_out p q =
     let f = F.Face p q (S.toList used) target_out in
-    if F.is_valid (dtrace f)
+    if F.is_valid f
         then F.singleton f
         else F.unions [(dfs new_ins
                             new_used
