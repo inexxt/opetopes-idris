@@ -129,12 +129,3 @@ mutual
             (Face _ _ _, Arrow _ _ _) => (big_product (maximum (dim p) (dim q)) (small_faces p q) p q)
             (Arrow _ _ _, Face _ _ _) => (big_product (maximum (dim p) (dim q)) (small_faces p q) p q)
             (Face _ _ _, Face _ _ _) => (big_product (maximum (dim p) (dim q)) (small_faces p q) p q)
-
-
-
--- for some reason I can't do that
--- product : {k1: Nat} -> {k2: Nat} -> O.Opetope k1 -> O.Opetope k2 -> FU.FMap
--- product {k1} {k2} p q = case (decEq k1 Z, decEq k2 Z) of
---     (Yes prf, _) => base_case_0k (replace prf p) q
---     (_, Yes prf) => base_case_k0 p (replace prf q)
---     (_, _) => big_product (maximum (dim p) (dim q)) (small_faces p q) p q

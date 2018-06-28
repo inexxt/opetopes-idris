@@ -16,7 +16,7 @@ import Utils as U
 public export
 data ProdFace : Nat -> Type where
     Point : O.Opetope Z -> O.Opetope Z -> ProdFace Z
-    -- TODO there should be refinment types - it has to have p1, p2 of dim > 1
+    -- there should be refinment types - it has to have p1, p2 of dim > 1
     Arrow : O.Opetope k1 -> O.Opetope k2 -> ProdFace Z -> ProdFace Z -> ProdFace (S Z)
     Face : O.Opetope k1 -> O.Opetope k2 -> List (ProdFace (S m)) -> ProdFace (S m) -> ProdFace (S (S m))
 
@@ -149,12 +149,6 @@ match op = case op of
     (Face _ _ _ _) => O.match (embed op)
 
 
--- Projection : Type
--- Projection = {n: Nat}
---            -> (dim_px: ProdFace n -> Nat)
---            -> ((t: ProdFace n) -> Opetope (dim_px t))
-
-
 all_eq : List (Opetope k) -> Opetope l -> Bool
 all_eq ls op = U.and_ (map (\x => O.eq x op) ls)
 
@@ -162,27 +156,6 @@ transform_n_k : {n: Nat} -> (k: Nat) -> Opetope n -> Maybe (Opetope k)
 transform_n_k k op = case decEq (dim op) k of
         Yes prf => Just (replace prf op)
         No _ => Nothing
-
--- contracted_eq : {k1: Nat} -> Opetope k1 -> Opetope k2 -> Bool
--- contracted_eq {k1=Z} op1 op2 = O.eq op1 op2
--- contracted_eq {k1=(S l)} op1 op2 = O.eq op1 op2 || ((all_eq ((O.cod op1)::(O.dom op1)) op2) &&
---                                          contracted_eq (cod op1) op2)
-
--- deep_p1_m : {n: Nat} -> (g: ProdFace n) -> Bool
--- deep_p1_m (Point p _) = True
--- deep_p1_m (Arrow p _ d c) = case p of
---     (O.Point _) => O.eq (p1 d) (p1 c) && O.eq p (p1 c)
---     (O.Arrow _ st fn) => O.eq (p1 d) st && O.eq (p1 c) fn
---     _ => False
--- deep_p1_m {n = (S (S m))} (Face p _ d c) =
---     (U.and_ (map deep_p1_m d)) && (deep_p1_m c) && case out of
---             Nothing => False
---             (Just x) => contracted_eq (O.Face (name p) ins x) p
---     where
---         ins : List (Opetope (S m))
---         ins = catMaybes $ map (\x => transform_n_k (S m) (p1 x)) d
---         out : Maybe (Opetope (S m))
---         out = transform_n_k (S m) (p1 c)
 
 
 all_eq_lsts : List (Opetope k1) -> List (Opetope k2) -> Bool
@@ -192,12 +165,12 @@ all_eq_lsts (x::xs) (y::ys) = case decEq (dim x) (dim y) of
 all_eq_lsts [] [] = True
 all_eq_lsts _ _ = False
 
-contracted_eq' : {k1: Nat} -> {k2: Nat} -> List (Opetope k1) -> Opetope k1 -> Opetope k2 -> Bool
-contracted_eq' {k1=Z} {k2=Z} ins out op = all_eq (out::ins) op
-contracted_eq' {k1=(S l1)} {k2=(S l2)} ins out op = (O.eq (cod op) out && all_eq_lsts ins (dom op)) ||
-                            (all_eq ins out && contracted_eq' (dom out) (cod out) op)
-contracted_eq' {k1=Z} {k2=(S l2)} ins out op = (O.eq (cod op) out && all_eq_lsts ins (dom op))
-contracted_eq' {k1=(S l1)} {k2=Z} ins out op = (all_eq ins out && contracted_eq' (dom out) (cod out) op)
+contracted_eq : {k1: Nat} -> {k2: Nat} -> List (Opetope k1) -> Opetope k1 -> Opetope k2 -> Bool
+contracted_eq {k1=Z} {k2=Z} ins out op = all_eq (out::ins) op
+contracted_eq {k1=(S l1)} {k2=(S l2)} ins out op = (O.eq (cod op) out && all_eq_lsts ins (dom op)) ||
+                            (all_eq ins out && contracted_eq (dom out) (cod out) op)
+contracted_eq {k1=Z} {k2=(S l2)} ins out op = (O.eq (cod op) out && all_eq_lsts ins (dom op))
+contracted_eq {k1=(S l1)} {k2=Z} ins out op = (all_eq ins out && contracted_eq (dom out) (cod out) op)
 
 deep_p1_m : {n: Nat} -> (g: ProdFace n) -> Bool
 deep_p1_m (Point p _) = True
@@ -206,7 +179,7 @@ deep_p1_m (Arrow p _ d c) = case p of
     (O.Arrow _ st fn) => O.eq (p1 d) st && O.eq (p1 c) fn
     _ => False
 deep_p1_m {n = (S (S m))} (Face p _ d c) =
-        (U.and_ (map deep_p1_m d)) && (deep_p1_m c) && (contracted_eq' ins out p)
+        (U.and_ (map deep_p1_m d)) && (deep_p1_m c) && (contracted_eq ins out p)
     where
         out : Opetope (dim_p1 c)
         out = p1 c
@@ -221,7 +194,7 @@ deep_p2_m (Arrow _ q d c) = case q of
     (O.Arrow _ st fn) => O.eq (p2 d) st && O.eq (p2 c) fn
     _ => False
 deep_p2_m {n = (S (S m))} (Face _ q d c) =
-        (U.and_ (map deep_p2_m d)) && (deep_p2_m c) && (contracted_eq' (dt "ins" ins) (dt "out" out) (dt "q" q))
+        (U.and_ (map deep_p2_m d)) && (deep_p2_m c) && (contracted_eq ins out q)
     where
         out : Opetope (dim_p2 c)
         out = p2 c
@@ -258,10 +231,6 @@ from_arrow_and_arrow arr1 arr2 =
 public export
 FSet : Nat -> Type
 FSet n = S.Set (ProdFace n)
-
--- public export
--- Show (FSet n) where
---     show t = show (S.toList t)
 
 export
 singleton : {n: Nat} -> ProdFace n -> FSet n
