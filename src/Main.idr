@@ -11,12 +11,24 @@ a: Opetope Z
 a = O.Point "a"
 b: Opetope Z
 b = O.Point "b"
+e: Opetope Z
+e = O.Point "e"
 ab1: Opetope (S Z)
 ab1 = O.Arrow "ab1" a b
 ab2: Opetope (S Z)
 ab2 = O.Arrow "ab2" a b
 alpha: Opetope (S (S Z))
 alpha = O.Face "alpha" [ab1] ab2
+
+ab : Opetope (S Z)
+ab = O.Arrow "ab" a b
+be : Opetope (S Z)
+be = O.Arrow "be" b e
+ae : Opetope (S Z)
+ae = O.Arrow "ae" a e
+
+three : Opetope (S (S Z))
+three = O.Face "three" [ab, be] ae
 
 c: Opetope Z
 c = O.Point "c"
@@ -38,6 +50,8 @@ aACAD: F.ProdFace (S Z)
 aACAD = (F.Arrow a cd1 pAC pAD)
 aADBD1: F.ProdFace (S Z)
 aADBD1 = (F.Arrow ab1 d pAD pBD)
+aADBD2: F.ProdFace (S Z)
+aADBD2 = (F.Arrow ab2 d pAD pBD)
 aACBD1: F.ProdFace (S Z)
 aACBD1 = (F.Arrow ab1 cd1 pAC pBD)
 aACBD2: F.ProdFace (S Z)
@@ -53,11 +67,13 @@ s3 = F.Face alpha cd1 [aACBD1] aACBD2
 sd : ProdFace 3
 sd = F.Face alpha cd1 [s3, s1] s2
 
+sw : ProdFace 2
+sw = F.Face alpha cd1 [aADBD1] aADBD2
 -- p : F.ProdFace (S (S Z))
 -- p = F.Face ab1 cd1 [aACAD, aADBD] aACBD
 
 op : String
-op = show $ (P.product alpha cd1)
+op = show $ (P.product alpha alpha)
 
 -- main = putStrLn $ (show $ is_valid sd)
 main : IO ()

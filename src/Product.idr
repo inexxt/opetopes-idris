@@ -123,12 +123,12 @@ mutual
 
     product : {k1: Nat} -> {k2: Nat} -> O.Opetope k1 -> O.Opetope k2 -> (FU.FMap, Nat)
     product {k1} {k2} p q = case (p, q) of
-            ((Point _), _) =>  D.trace "x" (base_case_0k p q, dim q)
-            (_, (Point _)) =>  D.trace "y" (base_case_k0 p q, dim p)
-            (Arrow _ _ _, Arrow _ _ _) => D.trace "z" (big_product (S (S Z)) (small_faces p q) p q)
-            (Face _ _ _, Arrow _ _ _) => D.trace "w" (big_product (maximum (dim p) (dim q)) (dt "FINISHED" (small_faces p q)) p q)
-            (Arrow _ _ _, Face _ _ _) =>  D.trace "zz" (big_product (maximum (dim p) (dim q)) (small_faces p q) p q)
-            (Face _ _ _, Face _ _ _) =>  D.trace "zzz" (big_product (maximum (dim p) (dim q)) (small_faces p q) p q)
+            ((Point _), _) => (base_case_0k p q, dim q)
+            (_, (Point _)) => (base_case_k0 p q, dim p)
+            (Arrow _ _ _, Arrow _ _ _) => (big_product (S (S Z)) (small_faces p q) p q)
+            (Face _ _ _, Arrow _ _ _) => (big_product (maximum (dim p) (dim q)) (small_faces p q) p q)
+            (Arrow _ _ _, Face _ _ _) => (big_product (maximum (dim p) (dim q)) (small_faces p q) p q)
+            (Face _ _ _, Face _ _ _) => (big_product (maximum (dim p) (dim q)) (small_faces p q) p q)
 
 
 

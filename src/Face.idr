@@ -123,10 +123,10 @@ mutual
 public export
 Show (ProdFace n) where
     show (Point p q) = show p ++ show q
-    show (Arrow p q d c) = (show $ 1) ++ "!(" ++ show [d] ++ " -> " ++ show c ++ ")"
-    show (Face p q d c) = (show $ dim c + 1) ++ "!(" ++ show d ++ "->" ++ show c ++ ")"
-    -- show (Arrow p q d c) = (show $ 1) ++ "!(" ++ show ((p, q)) ++ ": " ++ show [d] ++ " -> " ++ show c ++ ")"
-    -- show (Face p q d c) = (show $ dim c + 1) ++ "!(" ++ show ((p, q)) ++ ": " ++ show d ++ "->" ++ show c ++ ")"
+    -- show (Arrow p q d c) = (show $ 1) ++ "!(" ++ show [d] ++ " -> " ++ show c ++ ")"
+    -- show (Face p q d c) = (show $ dim c + 1) ++ "!(" ++ show d ++ "->" ++ show c ++ ")"
+    show (Arrow p q d c) = (show $ 1) ++ "!(" ++ show ((p, q)) ++ ": " ++ show [d] ++ " -> " ++ show c ++ ")"
+    show (Face p q d c) = (show $ dim c + 1) ++ "!(" ++ show ((p, q)) ++ ": " ++ show d ++ "->" ++ show c ++ ")"
 
 -- instance Subtype (ProdFace dim) where
 --     type SuperType (ProdFace dim) = O.Opetope dim
@@ -187,8 +187,10 @@ transform_n_k k op = case decEq (dim op) k of
 
 all_eq_lsts : List (Opetope k1) -> List (Opetope k2) -> Bool
 all_eq_lsts (x::xs) (y::ys) = case decEq (dim x) (dim y) of
-    Yes prf => (MS.fromList (replace prf xs)) == (MS.fromList ys)
+    Yes prf => (MS.fromList (replace prf (x::xs))) == (MS.fromList (y::ys))
     No _ => False
+all_eq_lsts [] [] = True
+all_eq_lsts _ _ = False
 
 contracted_eq' : {k1: Nat} -> {k2: Nat} -> List (Opetope k1) -> Opetope k1 -> Opetope k2 -> Bool
 contracted_eq' {k1=Z} {k2=Z} ins out op = all_eq (out::ins) op
@@ -219,7 +221,7 @@ deep_p2_m (Arrow _ q d c) = case q of
     (O.Arrow _ st fn) => O.eq (p2 d) st && O.eq (p2 c) fn
     _ => False
 deep_p2_m {n = (S (S m))} (Face _ q d c) =
-        (U.and_ (map deep_p2_m d)) && (deep_p2_m c) && (contracted_eq' ins out q)
+        (U.and_ (map deep_p2_m d)) && (deep_p2_m c) && (contracted_eq' (dt "ins" ins) (dt "out" out) (dt "q" q))
     where
         out : Opetope (dim_p2 c)
         out = p2 c
